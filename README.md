@@ -45,6 +45,12 @@ packages/consent/            model zgód (specyfikacja 12.1-12.3)
   src/definitions.ts         katalog zgód z podstawą prawną i skutkiem wycofania
   src/ledger.ts              rejestr zdarzeń tylko do dopisywania
   src/gates.ts               bramki operacji, tryb generowania planu
+packages/plan/               pipeline generowania planu (specyfikacja 8)
+  src/plan.ts                schemat planu i zastrzeżenie platformy
+  src/validate.ts            walidacja strukturalna odpowiedzi modelu
+  src/guardrails.ts          bariery merytoryczne + informacja zwrotna
+  src/referrals.ts           zlecenie badań i pytania do lekarza z reguł
+  src/pipeline.ts            orkiestracja, ponowienia, kolejka ręczna
 packages/notion-sync/        synchronizacja Notion -> cache (ADR-02)
   src/types.ts               kontrakt czytnika: jedna metoda, tylko odczyt
   src/sources.ts             mapowanie 6 baz Notion na rekordy cache
@@ -76,6 +82,14 @@ Trzy rzeczy są wymuszone technicznie, nie regulaminowo:
    metodę i jest to odczyt. Import przyrostowy nigdy nie archiwizuje rekordów
    nieobecnych w wyniku — tylko import pełny, bo tam brak rekordu naprawdę
    oznacza usunięcie.
+7. **Model nie może przekroczyć swoich uprawnień.** Plan przechodzi przez
+   bariery merytoryczne: bez diagnozy, bez nazw i dawek leków, bez obietnic
+   efektu, w granicach zadeklarowanej dostępności czasowej i ograniczeń
+   z kategorii ryzyka. Naruszenie wraca do modelu jako instrukcja, nie jest
+   poprawiane po cichu.
+8. **Trzy nieudane próby to kolejka ręczna, nie plan byle jaki.** Zlecenie badań
+   i pytania do lekarza powstają z reguł, więc specjalista dostaje komplet
+   materiału nawet wtedy, gdy model zawiódł.
 
 ## Dokumenty
 

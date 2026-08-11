@@ -1,0 +1,15 @@
+{
+  "name": "@longevity/plan",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pipeline generowania planu: schemat, walidacja odpowiedzi modelu, bariery merytoryczne, skierowania",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@longevity/core": "*",
+    "@longevity/model-payload": "*"
+  }
+}
