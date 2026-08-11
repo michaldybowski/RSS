@@ -1,0 +1,23 @@
+{
+  "name": "longevity",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Longevity — portal i aplikacja mobilna programu Długowieczności (HCPL / FDP)",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "node --import tsx --test packages/*/test/*.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "check": "npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
