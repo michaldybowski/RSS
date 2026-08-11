@@ -1,0 +1,630 @@
+/**
+ * Definicja kwestionariusza Longevity, wersja 1.
+ *
+ * Dziesięć domen z dokumentu kwietniowego. Krok 0 (zgody) obsługuje pakiet
+ * @longevity/consent — świadomie nie jest pytaniem kwestionariusza, bo zgoda
+ * ma własny cykl życia: wersję, wycofanie i osobny dowód udzielenia.
+ *
+ * Pytania oznaczone `required` to te, bez których nie da się policzyć ryzyka
+ * ani planu. Reszta wzbogaca plan, ale go nie warunkuje — kwestionariusz ma
+ * być do przejścia w jednym posiedzeniu.
+ */
+
+import type { QuestionnaireDefinition } from './types.ts';
+
+const TAK_NIE = [
+  { value: 'tak', label: 'Tak' },
+  { value: 'nie', label: 'Nie' },
+];
+
+export const QUESTIONNAIRE_V1: QuestionnaireDefinition = {
+  version: '1.0.0',
+  steps: [
+    {
+      domain: 1,
+      title: 'Stan zdrowia',
+      description: 'Podstawa oceny ryzyka. Kilka pytań decyduje o tym, czy program można rozpocząć samodzielnie.',
+      questions: [
+        {
+          code: 'd1_wiek',
+          type: 'number',
+          label: 'Wiek',
+          unit: 'lat',
+          required: true,
+          validation: { min: 16, max: 100 },
+        },
+        {
+          code: 'd1_plec',
+          type: 'single',
+          label: 'Płeć',
+          required: true,
+          options: [
+            { value: 'K', label: 'Kobieta' },
+            { value: 'M', label: 'Mężczyzna' },
+            { value: 'X', label: 'Wolę nie podawać' },
+          ],
+          help: 'Wpływa na normy referencyjne i wyliczenia energetyczne.',
+        },
+        {
+          code: 'd1_choroby_przewlekle',
+          type: 'multi',
+          label: 'Choroby przewlekłe',
+          help: 'Jeśli żadna nie dotyczy, zaznacz „Brak" — puste pole nie jest odpowiedzią.',
+          options: [
+            { value: 'brak', label: 'Brak' },
+            { value: 'nadcisnienie', label: 'Nadciśnienie tętnicze' },
+            { value: 'cukrzyca_t2', label: 'Cukrzyca typu 2' },
+            { value: 'insulinoopornosc', label: 'Insulinooporność' },
+            { value: 'tarczyca', label: 'Choroba tarczycy' },
+            { value: 'astma', label: 'Astma lub POChP' },
+            { value: 'wiencowa', label: 'Choroba wieńcowa' },
+            { value: 'autoimmunologiczna', label: 'Choroba autoimmunologiczna' },
+            { value: 'inne', label: 'Inne' },
+          ],
+        },
+        {
+          code: 'd1_choroby_inne_opis',
+          type: 'text',
+          label: 'Jakie inne choroby?',
+          validation: { maxLength: 500 },
+          showIf: { kind: 'includes', question: 'd1_choroby_przewlekle', value: 'inne' },
+        },
+        {
+          code: 'd1_zaburzenia_odzywiania',
+          type: 'single',
+          label: 'Czy występowały zaburzenia odżywiania?',
+          required: true,
+          options: TAK_NIE,
+        },
+        {
+          code: 'd1_omdlenia',
+          type: 'single',
+          label: 'Czy zdarzały się omdlenia?',
+          required: true,
+          options: TAK_NIE,
+          help: 'Odpowiedź twierdząca oznacza konieczność konsultacji lekarskiej przed startem.',
+        },
+        {
+          code: 'd1_bol_w_klatce',
+          type: 'single',
+          label: 'Czy występuje ból w klatce piersiowej przy wysiłku?',
+          required: true,
+          options: TAK_NIE,
+        },
+        {
+          code: 'd1_chrapanie',
+          type: 'single',
+          label: 'Czy chrapiesz?',
+          options: TAK_NIE,
+        },
+        {
+          code: 'd1_zmeczenie_dzienne',
+          type: 'single',
+          label: 'Czy odczuwasz nadmierne zmęczenie w ciągu dnia?',
+          options: TAK_NIE,
+        },
+        {
+          code: 'd1_historia_rodzinna',
+          type: 'multi',
+          label: 'Choroby w najbliższej rodzinie',
+          options: [
+            { value: 'zawal', label: 'Zawał lub udar' },
+            { value: 'cukrzyca', label: 'Cukrzyca' },
+            { value: 'nowotwor', label: 'Choroba nowotworowa' },
+            { value: 'otylosc', label: 'Otyłość' },
+            { value: 'brak', label: 'Brak / nie wiem' },
+          ],
+        },
+        {
+          code: 'd1_kontuzje',
+          type: 'single',
+          label: 'Czy masz kontuzje lub ograniczenia ruchowe?',
+          options: TAK_NIE,
+        },
+        {
+          code: 'd1_kontuzje_opis',
+          type: 'text',
+          label: 'Opisz kontuzje lub ograniczenia',
+          validation: { maxLength: 500 },
+          showIf: { kind: 'equals', question: 'd1_kontuzje', value: 'tak' },
+        },
+      ],
+    },
+    {
+      domain: 2,
+      title: 'Leki i substancje',
+      description: 'Leki zmieniają plan żywieniowy i treningowy. Podaj kategorie — nazw handlowych nie potrzebujemy.',
+      questions: [
+        {
+          code: 'd2_leki_metaboliczne',
+          type: 'multi',
+          label: 'Leki metaboliczne',
+          options: [
+            { value: 'brak', label: 'Nie przyjmuję' },
+            { value: 'metformina', label: 'Metformina' },
+            { value: 'glp1_gip', label: 'GLP-1 lub GLP-1/GIP (np. semaglutyd, tirzepatyd)' },
+            { value: 'insulina', label: 'Insulina' },
+            { value: 'inne', label: 'Inne' },
+          ],
+        },
+        {
+          code: 'd2_leki_nadcisnienie',
+          type: 'single',
+          label: 'Czy przyjmujesz leki na nadciśnienie?',
+          options: TAK_NIE,
+        },
+        {
+          code: 'd2_leki_psychotropowe',
+          type: 'single',
+          label: 'Czy przyjmujesz leki psychotropowe?',
+          options: TAK_NIE,
+        },
+        {
+          code: 'd2_leki_tarczyca',
+          type: 'single',
+          label: 'Czy przyjmujesz hormony tarczycy?',
+          options: TAK_NIE,
+        },
+        {
+          code: 'd2_suplementy',
+          type: 'multi',
+          label: 'Regularnie przyjmowane suplementy',
+          options: [
+            { value: 'witamina_d', label: 'Witamina D' },
+            { value: 'omega3', label: 'Omega-3' },
+            { value: 'magnez', label: 'Magnez' },
+            { value: 'zelazo', label: 'Żelazo' },
+            { value: 'bialko', label: 'Białko w proszku' },
+            { value: 'inne', label: 'Inne' },
+          ],
+        },
+        {
+          code: 'd2_kawa_dziennie',
+          type: 'number',
+          label: 'Filiżanki kawy dziennie',
+          validation: { min: 0, max: 15 },
+        },
+        {
+          code: 'd2_alkohol',
+          type: 'single',
+          label: 'Jak często pijesz alkohol?',
+          required: true,
+          options: [
+            { value: 'brak', label: 'Nie piję' },
+            { value: 'okazjonalnie', label: 'Okazjonalnie' },
+            { value: 'tygodniowo', label: 'Kilka razy w tygodniu' },
+            { value: 'codziennie', label: 'Codziennie' },
+          ],
+        },
+        {
+          code: 'd2_nikotyna',
+          type: 'single',
+          label: 'Tytoń lub nikotyna',
+          required: true,
+          options: [
+            { value: 'nie', label: 'Nie używam' },
+            { value: 'okazjonalnie', label: 'Okazjonalnie' },
+            { value: 'codziennie', label: 'Codziennie' },
+          ],
+        },
+      ],
+    },
+    {
+      domain: 3,
+      title: 'Antropometria',
+      description: 'Obwody są opcjonalne, ale bez nich nie policzymy WHR — a to lepszy wskaźnik ryzyka niż samo BMI.',
+      questions: [
+        {
+          code: 'd3_waga',
+          type: 'number',
+          label: 'Masa ciała',
+          unit: 'kg',
+          required: true,
+          validation: { min: 30, max: 300 },
+        },
+        {
+          code: 'd3_wzrost',
+          type: 'number',
+          label: 'Wzrost',
+          unit: 'cm',
+          required: true,
+          validation: { min: 120, max: 230 },
+        },
+        {
+          code: 'd3_talia',
+          type: 'number',
+          label: 'Obwód talii',
+          unit: 'cm',
+          validation: { min: 40, max: 200 },
+        },
+        {
+          code: 'd3_biodra',
+          type: 'number',
+          label: 'Obwód bioder',
+          unit: 'cm',
+          validation: { min: 40, max: 200 },
+        },
+        {
+          code: 'd3_waga_stabilna',
+          type: 'single',
+          label: 'Czy masa ciała jest stabilna od roku?',
+          options: TAK_NIE,
+        },
+      ],
+    },
+    {
+      domain: 4,
+      title: 'Nawyki żywieniowe',
+      questions: [
+        {
+          code: 'd4_posilki_dziennie',
+          type: 'number',
+          label: 'Liczba posiłków dziennie',
+          required: true,
+          validation: { min: 1, max: 8 },
+        },
+        {
+          code: 'd4_sniadania',
+          type: 'single',
+          label: 'Czy jesz śniadania?',
+          options: TAK_NIE,
+        },
+        {
+          code: 'd4_dieta',
+          type: 'single',
+          label: 'Sposób odżywiania',
+          options: [
+            { value: 'bez_ograniczen', label: 'Bez ograniczeń' },
+            { value: 'wegetarianska', label: 'Wegetariańska' },
+            { value: 'weganska', label: 'Wegańska' },
+            { value: 'bezglutenowa', label: 'Bezglutenowa' },
+            { value: 'inna', label: 'Inna' },
+          ],
+        },
+        {
+          code: 'd4_woda',
+          type: 'single',
+          label: 'Ile wody pijesz dziennie?',
+          required: true,
+          options: [
+            { value: '<1l', label: 'Poniżej 1 litra' },
+            { value: '1-2l', label: '1–2 litry' },
+            { value: '2-3l', label: '2–3 litry' },
+            { value: '>3l', label: 'Powyżej 3 litrów' },
+          ],
+        },
+        {
+          code: 'd4_warzywa_porcje',
+          type: 'number',
+          label: 'Porcje warzyw i owoców dziennie',
+          validation: { min: 0, max: 12 },
+        },
+        {
+          code: 'd4_problemy_gi',
+          type: 'multi',
+          label: 'Dolegliwości ze strony układu pokarmowego',
+          options: [
+            { value: 'brak', label: 'Brak' },
+            { value: 'wzdecia', label: 'Wzdęcia' },
+            { value: 'zgaga', label: 'Zgaga' },
+            { value: 'zaparcia', label: 'Zaparcia' },
+            { value: 'biegunki', label: 'Biegunki' },
+            { value: 'bole_brzucha', label: 'Bóle brzucha' },
+          ],
+        },
+        {
+          code: 'd4_awersje',
+          type: 'text',
+          label: 'Produkty, których nie zjesz',
+          validation: { maxLength: 300 },
+        },
+        {
+          code: 'd4_budzet',
+          type: 'single',
+          label: 'Budżet na żywienie',
+          options: [
+            { value: 'bez_limitu', label: 'Bez istotnych ograniczeń' },
+            { value: 'umiarkowany', label: 'Umiarkowany' },
+            { value: 'ograniczony', label: 'Ograniczony' },
+          ],
+        },
+      ],
+    },
+    {
+      domain: 5,
+      title: 'Aktywność fizyczna',
+      questions: [
+        {
+          code: 'd5_trening_dni',
+          type: 'number',
+          label: 'Dni treningowe w tygodniu (obecnie)',
+          required: true,
+          validation: { min: 0, max: 7 },
+        },
+        {
+          code: 'd5_kroki',
+          type: 'number',
+          label: 'Średnia liczba kroków dziennie',
+          validation: { min: 0, max: 40000 },
+          help: 'Jeśli nie mierzysz, zostaw puste — nie zgadujemy za Ciebie.',
+        },
+        {
+          code: 'd5_doswiadczenie',
+          type: 'single',
+          label: 'Doświadczenie treningowe',
+          options: [
+            { value: 'brak', label: 'Brak' },
+            { value: 'poczatkujacy', label: 'Początkujący' },
+            { value: 'sredni', label: 'Średniozaawansowany' },
+            { value: 'zaawansowany', label: 'Zaawansowany' },
+          ],
+        },
+        {
+          code: 'd5_sprzet',
+          type: 'multi',
+          label: 'Dostępny sprzęt',
+          options: [
+            { value: 'silownia', label: 'Karnet na siłownię' },
+            { value: 'hantle', label: 'Hantle lub kettlebell' },
+            { value: 'gumy', label: 'Gumy oporowe' },
+            { value: 'mata', label: 'Mata' },
+            { value: 'rower', label: 'Rower lub trenażer' },
+            { value: 'brak', label: 'Brak — tylko masa własna' },
+          ],
+        },
+        {
+          code: 'd5_czas_sesji',
+          type: 'single',
+          label: 'Ile czasu możesz przeznaczyć na jedną sesję?',
+          options: [
+            { value: '30', label: '30 minut' },
+            { value: '45', label: '45 minut' },
+            { value: '60', label: '60 minut' },
+            { value: '75', label: '75 minut' },
+            { value: '90', label: '90 minut' },
+          ],
+        },
+        {
+          code: 'd5_dni_dostepne',
+          type: 'number',
+          label: 'Ile dni w tygodniu realnie możesz trenować?',
+          validation: { min: 1, max: 7 },
+        },
+        {
+          code: 'd5_okna_czasowe',
+          type: 'multi',
+          label: 'Kiedy masz czas?',
+          options: [
+            { value: 'rano', label: 'Rano' },
+            { value: 'obiad', label: 'W przerwie obiadowej' },
+            { value: 'po_pracy', label: 'Po pracy' },
+            { value: 'wieczor', label: 'Wieczorem' },
+          ],
+        },
+        {
+          code: 'd5_ograniczenia_ruchowe',
+          type: 'multi',
+          label: 'Bóle lub ograniczenia przy ruchu',
+          options: [
+            { value: 'brak', label: 'Brak' },
+            { value: 'kregoslup_l', label: 'Kręgosłup lędźwiowy' },
+            { value: 'kregoslup_sz', label: 'Kręgosłup szyjny' },
+            { value: 'kolana', label: 'Kolana' },
+            { value: 'barki', label: 'Barki' },
+            { value: 'biodra', label: 'Biodra' },
+          ],
+        },
+      ],
+    },
+    {
+      domain: 6,
+      title: 'Sen',
+      questions: [
+        {
+          code: 'd6_godziny_sen',
+          type: 'number',
+          label: 'Ile godzin śpisz w dni robocze?',
+          unit: 'godz.',
+          required: true,
+          validation: { min: 3, max: 12 },
+        },
+        {
+          code: 'd6_jakosc',
+          type: 'single',
+          label: 'Jak oceniasz jakość swojego snu?',
+          required: true,
+          options: [
+            { value: '1', label: '1 — bardzo zła' },
+            { value: '2', label: '2 — zła' },
+            { value: '3', label: '3 — przeciętna' },
+            { value: '4', label: '4 — dobra' },
+            { value: '5', label: '5 — bardzo dobra' },
+          ],
+        },
+        {
+          code: 'd6_wybudzenia',
+          type: 'single',
+          label: 'Ile razy budzisz się w nocy?',
+          required: true,
+          options: [
+            { value: '0', label: 'Nie budzę się' },
+            { value: '1', label: 'Raz' },
+            { value: '2', label: 'Dwa razy' },
+            { value: '3', label: 'Trzy razy lub więcej' },
+          ],
+        },
+        {
+          code: 'd6_ekrany_przed_snem',
+          type: 'single',
+          label: 'Czy korzystasz z ekranów w ostatniej godzinie przed snem?',
+          options: TAK_NIE,
+        },
+        {
+          code: 'd6_drzemki',
+          type: 'single',
+          label: 'Czy regularnie drzemiesz w ciągu dnia?',
+          options: TAK_NIE,
+        },
+      ],
+    },
+    {
+      domain: 7,
+      title: 'Stres i regeneracja',
+      questions: [
+        {
+          code: 'd7_poziom_stresu',
+          type: 'number',
+          label: 'Poziom stresu w skali 1–10',
+          required: true,
+          validation: { min: 1, max: 10 },
+        },
+        {
+          code: 'd7_zrodla',
+          type: 'multi',
+          label: 'Główne źródła stresu',
+          options: [
+            { value: 'praca', label: 'Praca' },
+            { value: 'finanse', label: 'Finanse' },
+            { value: 'zdrowie', label: 'Zdrowie' },
+            { value: 'relacje', label: 'Relacje' },
+            { value: 'opieka', label: 'Opieka nad bliskimi' },
+          ],
+        },
+        {
+          code: 'd7_coping',
+          type: 'multi',
+          label: 'Co pomaga Ci się zregenerować?',
+          options: [
+            { value: 'ruch', label: 'Ruch' },
+            { value: 'natura', label: 'Kontakt z naturą' },
+            { value: 'medytacja', label: 'Medytacja lub oddech' },
+            { value: 'kontakt', label: 'Kontakt z ludźmi' },
+            { value: 'hobby', label: 'Hobby' },
+            { value: 'nic', label: 'Nic nie pomaga' },
+          ],
+        },
+        {
+          code: 'd7_diagnoza_psychologiczna',
+          type: 'single',
+          label: 'Czy masz postawioną diagnozę psychologiczną lub psychiatryczną?',
+          options: TAK_NIE,
+        },
+      ],
+    },
+    {
+      domain: 8,
+      title: 'Harmonogram i tryb życia',
+      questions: [
+        {
+          code: 'd8_tryb_pracy',
+          type: 'single',
+          label: 'Tryb pracy',
+          options: [
+            { value: 'stacjonarny', label: 'Stacjonarny' },
+            { value: 'hybrydowy', label: 'Hybrydowy' },
+            { value: 'zdalny', label: 'Zdalny' },
+            { value: 'zmianowy', label: 'Zmianowy' },
+          ],
+        },
+        {
+          code: 'd8_dzieci',
+          type: 'single',
+          label: 'Czy sprawujesz opiekę nad dziećmi?',
+          options: TAK_NIE,
+        },
+        {
+          code: 'd8_podroze_sluzbowe',
+          type: 'single',
+          label: 'Podróże służbowe',
+          options: [
+            { value: 'brak', label: 'Brak' },
+            { value: 'rzadko', label: 'Kilka razy w roku' },
+            { value: 'czesto', label: 'Kilka razy w miesiącu' },
+          ],
+        },
+      ],
+    },
+    {
+      domain: 9,
+      title: 'Badania laboratoryjne',
+      description:
+        'Wszystkie pola są opcjonalne. Im więcej wypełnisz, tym precyzyjniejszy plan — brak badań nie blokuje programu, ale podnosi flagę informacyjną.',
+      questions: [
+        {
+          code: 'd9_data_badan',
+          type: 'date',
+          label: 'Data ostatnich badań',
+        },
+        { code: 'd9_glukoza', type: 'number', label: 'Glukoza na czczo', unit: 'mg/dl', validation: { min: 20, max: 600 } },
+        { code: 'd9_hba1c', type: 'number', label: 'HbA1c', unit: '%', validation: { min: 3, max: 20 } },
+        { code: 'd9_insulina', type: 'number', label: 'Insulina na czczo', unit: 'µIU/ml', validation: { min: 0, max: 300 } },
+        { code: 'd9_ldl', type: 'number', label: 'LDL', unit: 'mg/dl', validation: { min: 10, max: 400 } },
+        { code: 'd9_hdl', type: 'number', label: 'HDL', unit: 'mg/dl', validation: { min: 10, max: 200 } },
+        { code: 'd9_trojglicerydy', type: 'number', label: 'Trójglicerydy', unit: 'mg/dl', validation: { min: 10, max: 1000 } },
+        { code: 'd9_witamina_d', type: 'number', label: 'Witamina D (25-OH)', unit: 'ng/ml', validation: { min: 0, max: 200 } },
+        { code: 'd9_ferrytyna', type: 'number', label: 'Ferrytyna', unit: 'ng/ml', validation: { min: 0, max: 2000 } },
+        { code: 'd9_tsh', type: 'number', label: 'TSH', unit: 'µIU/ml', validation: { min: 0, max: 100 } },
+        { code: 'd9_crp', type: 'number', label: 'CRP', unit: 'mg/l', validation: { min: 0, max: 300 } },
+        {
+          code: 'd9_profilaktyka_aktualna',
+          type: 'single',
+          label: 'Czy badania profilaktyczne właściwe dla Twojego wieku i płci są aktualne?',
+          required: true,
+          options: TAK_NIE,
+        },
+      ],
+    },
+    {
+      domain: 10,
+      title: 'Cele i preferencje',
+      questions: [
+        {
+          code: 'd10_cel_glowny',
+          type: 'multi',
+          label: 'Co chcesz osiągnąć?',
+          required: true,
+          validation: { maxSelected: 3 },
+          options: [
+            { value: 'redukcja_masy', label: 'Redukcja masy ciała' },
+            { value: 'wzrost_sily', label: 'Wzrost siły i masy mięśniowej' },
+            { value: 'poprawa_snu', label: 'Poprawa snu' },
+            { value: 'wiecej_energii', label: 'Więcej energii' },
+            { value: 'redukcja_stresu', label: 'Redukcja stresu' },
+            { value: 'wyniki_badan', label: 'Poprawa wyników badań' },
+            { value: 'kondycja', label: 'Poprawa kondycji' },
+          ],
+          help: 'Wybierz maksymalnie trzy — plan, który goni wszystko naraz, nie działa.',
+        },
+        {
+          code: 'd10_format_planu',
+          type: 'single',
+          label: 'Jaki format planu Ci odpowiada?',
+          required: true,
+          options: [
+            { value: 'precyzyjny', label: 'Precyzyjny — gramatura i konkretne godziny' },
+            { value: 'elastyczny', label: 'Elastyczny — ramy i propozycje' },
+            { value: 'zasady', label: 'Zasady — kilka reguł bez rozpiski' },
+          ],
+        },
+        {
+          code: 'd10_horyzont',
+          type: 'single',
+          label: 'W jakim horyzoncie chcesz zobaczyć efekt?',
+          options: [
+            { value: '3m', label: '3 miesiące' },
+            { value: '6m', label: '6 miesięcy' },
+            { value: '12m', label: '12 miesięcy' },
+            { value: 'bez', label: 'Bez konkretnego terminu' },
+          ],
+        },
+        {
+          code: 'd10_deal_breakery',
+          type: 'text',
+          label: 'Czego na pewno nie zrobisz?',
+          validation: { maxLength: 500 },
+          help: 'Plan uwzględni to jako granicę, a nie jako przeszkodę do pokonania.',
+        },
+      ],
+    },
+  ],
+};

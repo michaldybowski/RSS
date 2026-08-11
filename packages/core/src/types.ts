@@ -80,6 +80,22 @@ export interface ParticipantIntake {
   lifestyle: Lifestyle;
 }
 
+/**
+ * Cele i preferencje z Domeny 10, po oczyszczeniu z tekstu swobodnego.
+ * Kształtują plan, ale nie biorą udziału w ocenie ryzyka.
+ */
+export interface PlanPreferences {
+  goals: readonly string[];
+  planFormat: 'precyzyjny' | 'elastyczny' | 'zasady';
+  minutesPerSession: number;
+  daysAvailable: number;
+  timeWindows: readonly string[];
+  equipment: readonly string[];
+  dietaryPattern: string;
+  aversions: readonly string[];
+  movementLimitations: readonly string[];
+}
+
 /** Kategorie ryzyka. Nazwy kolorami, nie A/B/C — patrz ADR-06 w specyfikacji. */
 export type RiskCategory = 'ZIELONA' | 'ŻÓŁTA' | 'CZERWONA';
 
