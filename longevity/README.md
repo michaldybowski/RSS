@@ -45,6 +45,12 @@ packages/consent/            model zgód (specyfikacja 12.1-12.3)
   src/definitions.ts         katalog zgód z podstawą prawną i skutkiem wycofania
   src/ledger.ts              rejestr zdarzeń tylko do dopisywania
   src/gates.ts               bramki operacji, tryb generowania planu
+packages/notion-sync/        synchronizacja Notion -> cache (ADR-02)
+  src/types.ts               kontrakt czytnika: jedna metoda, tylko odczyt
+  src/sources.ts             mapowanie 6 baz Notion na rekordy cache
+  src/props.ts               odczyt właściwości z raportowaniem problemów
+  src/rateLimit.ts           odstępy między żądaniami i ponowienia
+  src/sync.ts                orkiestracja: tryb pełny i przyrostowy
 ```
 
 ## Zasady, które kod egzekwuje
@@ -66,6 +72,10 @@ Trzy rzeczy są wymuszone technicznie, nie regulaminowo:
 5. **Zmiana treści zgody wymusza ponowne zebranie.** Zgoda udzielona na starszą
    wersję nie przenosi się na nową — inaczej „zgodziłem się" znaczyłoby coś
    innego niż to, co osoba przeczytała.
+6. **Synchronizacja z Notion jest jednokierunkowa.** Kontrakt czytnika ma jedną
+   metodę i jest to odczyt. Import przyrostowy nigdy nie archiwizuje rekordów
+   nieobecnych w wyniku — tylko import pełny, bo tam brak rekordu naprawdę
+   oznacza usunięcie.
 
 ## Dokumenty
 
