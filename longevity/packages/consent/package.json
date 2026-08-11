@@ -1,0 +1,11 @@
+{
+  "name": "@longevity/consent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Model zgód: katalog, rejestr zdarzeń, bramki operacji (specyfikacja 12.1-12.3)",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
