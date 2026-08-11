@@ -41,6 +41,10 @@ packages/questionnaire/      kwestionariusz wstępny
   src/conditions.ts          ewaluator warunków widoczności
   src/validate.ts            walidacja odpowiedzi (Etap 1 pipeline'u)
   src/normalize.ts           odpowiedzi → wejście silnika reguł
+packages/consent/            model zgód (specyfikacja 12.1-12.3)
+  src/definitions.ts         katalog zgód z podstawą prawną i skutkiem wycofania
+  src/ledger.ts              rejestr zdarzeń tylko do dopisywania
+  src/gates.ts               bramki operacji, tryb generowania planu
 ```
 
 ## Zasady, które kod egzekwuje
@@ -56,6 +60,12 @@ Trzy rzeczy są wymuszone technicznie, nie regulaminowo:
    listy i dodatkowo skanowany przed wysyłką. Test kończy się niepowodzeniem,
    jeśli do modelu trafi imię, e-mail, PESEL, pełna data lub surowy wynik badania
    tam, gdzie wystarcza interpretacja.
+4. **Zgoda jest odwoływalna zawsze**, także ta wymagana do działania programu.
+   Wycofanie zgody na wearables nie blokuje planu; wycofanie zgody na AI
+   przełącza na ścieżkę ręczną, nie odcina uczestnika od programu.
+5. **Zmiana treści zgody wymusza ponowne zebranie.** Zgoda udzielona na starszą
+   wersję nie przenosi się na nową — inaczej „zgodziłem się" znaczyłoby coś
+   innego niż to, co osoba przeczytała.
 
 ## Dokumenty
 
