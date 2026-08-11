@@ -1,6 +1,6 @@
 # Longevity — Specyfikacja techniczna platformy i aplikacji mobilnej
 
-**Status:** wersja 0.1 — do zatwierdzenia
+**Status:** wersja 0.2 — decyzje 2–8 rozstrzygnięte, decyzja 1 odroczona do prototypu
 **Data:** 26 lipca 2026
 **Autor:** przygotowane dla HCPL / FDP
 **Podstawa merytoryczna:** *Longevity — Pełna macierz funkcjonalności*, *Longevity — Schemat i harmonogram realizacji*, *Longevity Platform — WordPress Integration & Medical Module*, *Model ekonomiczny v5*
@@ -11,10 +11,10 @@
 
 Dokument jest specyfikacją do **zatwierdzenia przed napisaniem kodu**. Rozstrzyga: co budujemy, jak dzielimy dane, jak Notion pełni rolę back office, jak wygląda model zgód i rozliczeń, oraz co trzeba zdecydować, zanim ruszy Faza A.
 
-Sekcje oznaczone **[DO DECYZJI]** wymagają rozstrzygnięcia przez zespół — są zebrane w sekcji 19.
-Sekcje oznaczone **[DO WALIDACJI MEDYCZNEJ]** wymagają akceptacji lekarza przed uruchomieniem produkcyjnym.
+**Decyzje 2–8 zostały podjęte** (rejestr w sekcji 19). Decyzja 1 — wariant hostingu produkcyjnego — jest **świadomie odroczona** do momentu zobaczenia działającego prototypu. Specyfikacja jest napisana tak, żeby ta decyzja nie wpływała na model danych ani na kontrakty API; zmienia wyłącznie warstwę wdrożeniową (sekcja 3.4).
 
-Decyzja o docelowym hostingu produkcyjnym została **świadomie odroczona** do momentu zobaczenia działającego prototypu. Specyfikacja jest napisana tak, żeby ta decyzja nie wpływała na model danych ani na kontrakty API — zmienia wyłącznie warstwę wdrożeniową (sekcja 3.4).
+Sekcje oznaczone **[ROZSTRZYGNIĘTE]** zawierają podjętą decyzję wraz z uzasadnieniem.
+Sekcje oznaczone **[DO WALIDACJI MEDYCZNEJ]** wymagają akceptacji lekarza przed uruchomieniem produkcyjnym.
 
 ---
 
@@ -306,7 +306,7 @@ data_request       id, user_id, typ (dostep|sprostowanie|usuniecie|przenoszenie)
 | **Partnerzy marketplace** | Nazwa, Kategoria, Opis, URL, Prowizja, Status umowy | Notion → app | Rozwój |
 | **Pakiety i cennik** | Pakiet, Wariant, Cena netto, VAT, Linia finansowa, Obowiązuje od | Notion → app | Zarząd FDP |
 | **Progi ZFŚS** | Próg dochodowy, Dopłata %, Obowiązuje od, Organizacja | Notion → app | Księgowość / HR |
-| **Harmonogram warsztatów** | Temat, Data, Zakład, Trener, Status, Liczba miejsc | Notion ↔ app *(patrz 5.4)* | Operacje FDP |
+| **Harmonogram warsztatów** | Temat, Data, Zakład, Trener, Status, Liczba miejsc | Notion → app | Operacje FDP |
 | **Schemat certyfikacji** | Domena, Kryterium, Waga, Dowód wymagany, Wersja | Notion → app | CAC / audyt |
 | **Leady B2B** | Firma, Kontakt, Etap, Pakiet, Właściciel, Następny krok | tylko Notion | Sprzedaż |
 
@@ -324,11 +324,15 @@ data_request       id, user_id, typ (dostep|sprostowanie|usuniecie|przenoszenie)
 - Pełny import wszystkich baz przy starcie: rzędu kilku minut. Akceptowalne, bo dzieje się raz.
 - Aplikacja **nigdy** nie wywołuje Notion API w odpowiedzi na żądanie użytkownika.
 
-### 5.4 Jedyny wyjątek od jednokierunkowości **[DO DECYZJI]**
+### 5.4 Brak wyjątków od jednokierunkowości **[ROZSTRZYGNIĘTE]**
 
-Harmonogram warsztatów jest kandydatem na zapis zwrotny (liczba zapisanych osób z aplikacji → pole w Notion), bo operacje FDP planują w Notion i potrzebują widzieć obłożenie. Zapis obejmowałby **wyłącznie liczbę**, nigdy listę nazwisk.
+**Decyzja: bez zapisu zwrotnego.** ADR-02 obowiązuje bez wyjątków — nic nie wraca do Notion automatycznie.
 
-Alternatywa bez zapisu zwrotnego: widok obłożenia w panelu admina platformy, a Notion pozostaje czysto planistyczny. Rekomendacja: **alternatywa** — utrzymuje regułę ADR-02 bez wyjątków, a koszt to jedno dodatkowe miejsce do zajrzenia.
+Rozważany był zapis liczby osób zapisanych na warsztat (nigdy nazwisk), bo operacje FDP planują w Notion. Odrzucony: obłożenie widoczne jest w panelu admina platformy, a Notion pozostaje czysto planistyczny.
+
+**Uzasadnienie:** pierwszy wyjątek od reguły jednokierunkowości pociąga kolejne („skoro obłożenie, to czemu nie frekwencja"). Dołożenie zapisu zwrotnego po pilotażu, jeśli operacje realnie go potrzebują, jest łatwe. Usunięcie go później — nie.
+
+W harmonogramie warsztatów kierunek synchronizacji to zatem **Notion → app**, jak we wszystkich pozostałych bazach (tabela 5.1).
 
 ---
 
@@ -445,6 +449,16 @@ Propozycja do akceptacji przez lekarza. Każda flaga ma kod, poziom i tekst uzas
 | `FLAG_LABS_STALE` | ostatnie badania > 12 miesięcy | ŻÓŁTA (informacyjna) |
 
 Zestaw jest rozszerzalny w konfiguracji. Każda zmiana progu podbija wersję i jest zapisywana w audit logu.
+
+**[ROZSTRZYGNIĘTE] Tryb walidacji.** Powyższa tabela ma status **wersji roboczej** i jest tak oznaczona w kodzie (`RULESET_STATUS = draft`). Budowa Fazy A idzie na niej równolegle, bo pracujemy na danych syntetycznych.
+
+Warunki przejścia do statusu zatwierdzonego:
+1. **Osoba akceptująca zostaje wskazana imiennie** — lekarz z ekosystemu HCPL / PFSz / partnerów medycznych. *Do uzupełnienia: [nazwisko].*
+2. Akceptacja obejmuje: progi liczbowe, poziom każdej flagi, treść komunikatu widzianego przez uczestnika oraz regułę zatrzymania pipeline'u przy kategorii CZERWONEJ.
+3. Akceptacja jest zapisana jako wersja zestawu reguł z datą i osobą — nie jako e-mail.
+4. **System nie przyjmuje danych rzeczywistego uczestnika, dopóki zestaw ma status `draft`.** Blokada techniczna, nie procedura.
+
+Uzasadnienie trybu: to jedyne miejsce w systemie, w którym błąd może zaszkodzić człowiekowi. Flaga za wysoko przepuści osobę, która nie powinna zaczynać bez lekarza; za nisko — zablokuje połowę uczestników i zabije adopcję. Ustalenie nazwiska teraz, a nie tydzień przed pilotażem, jest różnicą między przeglądem a pośpiechem.
 
 ### 7.4 Wyliczenia automatyczne
 
@@ -574,11 +588,44 @@ Wymagane umowy powierzenia: dostawca hostingu i bazy, dostawca modelu językoweg
 
 Transfer do modelu językowego to transfer poza EOG — wymaga standardowych klauzul umownych i **oceny skutków (DPIA)** przed uruchomieniem, ponieważ dotyczy danych art. 9 i profilowania na dużą skalę. DPIA to obowiązek, nie opcja, przy tej kombinacji.
 
-**[DO DECYZJI]** Rozważyć minimalizację: do modelu wysyłać dane pseudonimizowane i zredukowane do zestawu koniecznego dla warstwy narracyjnej (bez imienia, bez daty urodzenia, bez surowych wyników badań tam, gdzie wystarczy interpretacja). Ogranicza to zakres transferu i upraszcza DPIA.
+**[ROZSTRZYGNIĘTE] Minimalizacja obowiązkowa.** Do modelu językowego trafia wyłącznie zestaw pseudonimizowany i zredukowany.
+
+Zakres wysyłany:
+
+| Wysyłamy | Nie wysyłamy |
+|---|---|
+| Identyfikator techniczny zapytania (nie ID użytkownika) | Imię, nazwisko, e-mail, telefon |
+| Wiek w latach, płeć | Data urodzenia, PESEL |
+| Kategoria ryzyka i lista kodów flag | — |
+| Interpretacje zamiast wartości surowych („insulinooporność potwierdzona") | Surowe wyniki badań, gdy interpretacja wystarcza |
+| BMI, WHR, TDEE jako przedziały tam, gdzie precyzja nie zmienia planu | Wartości dokładne bez potrzeby |
+| Cele, preferencje, dostępność czasowa, ograniczenia ruchowe | Nazwa pracodawcy, dział, lokalizacja |
+| Leki w kategoriach (np. „GLP-1 aktywny") | Nazwy handlowe i dawki, gdy kategoria wystarcza |
+
+**Uzasadnienie:** jakość planu zależy od wieku, płci, kategorii ryzyka, flag i celów — nie od identyfikatorów. Redukcja zawęża zakres transferu poza EOG, upraszcza DPIA i ogranicza szkodę w razie incydentu, nie kosztując nic na jakości.
+
+Wyjątki od tabeli wymagają odnotowania w DPIA. Zakres wysyłanego pakietu jest testowany automatycznie — test kończy się niepowodzeniem, jeśli do modelu trafi pole z listy zakazanej.
 
 ### 12.6 Bramka przed produkcją
 
-Przed przyjęciem danych rzeczywistej osoby wymagane: zatwierdzona DPIA · komplet umów powierzenia · polityka prywatności i regulamin · wyznaczenie IOD (przy tej skali i kategorii danych — prawdopodobnie wymagany) · test odtworzenia z backupu · przegląd bezpieczeństwa.
+Przed przyjęciem danych rzeczywistej osoby wymagane:
+
+| Warunek | Status | Właściciel |
+|---|---|---|
+| Zatwierdzona DPIA | otwarte | IOD HCPL |
+| Komplet umów powierzenia | otwarte | HCPL / FDP |
+| Polityka prywatności i regulamin | otwarte | HCPL |
+| **IOD z zakresem obejmującym FDP** | **rozstrzygnięte — patrz niżej** | HCPL |
+| Test odtworzenia z backupu | otwarte | zespół IT |
+| Testy penetracyjne | rozstrzygnięte — patrz 14 | CyberC4HE |
+
+**[ROZSTRZYGNIĘTE] Inspektor Ochrony Danych.** IOD jest już powołany w strukturze HCPL. Zakres jego obowiązków zostaje **rozszerzony na FDP jako odrębnego administratora**.
+
+Do wykonania po stronie organizacji:
+1. Aneks do zakresu obowiązków IOD obejmujący FDP i program Longevity.
+2. Zgłoszenie zmiany do UODO (obowiązek z art. 37 ust. 7 RODO — zgłoszenie danych IOD dla nowego administratora).
+3. Włączenie IOD w prace nad DPIA **od początku Fazy A**, nie po jej zakończeniu — DPIA opiniowana po fakcie zwykle wymusza zmiany w architekturze.
+4. Rozstrzygnięcie, czy FDP i HCPL są współadministratorami czy odrębnymi administratorami z powierzeniem — to determinuje treść klauzul informacyjnych. **Pytanie do IOD, nie do zespołu IT.**
 
 ---
 
@@ -598,7 +645,12 @@ Progi dopłat w linii B pochodzą z bazy „Progi ZFŚS", per organizacja — re
 
 **Ograniczenie wynikające z macierzy:** w linii A obowiązuje zakaz danych imiennych. System nie wystawia w niej dokumentów imiennych i nie przekazuje pracodawcy list uczestników — tylko liczby.
 
-**[DO DECYZJI]** Stawka VAT (zwolnienie 43.1.32 wymaga potwierdzenia interpretacją KIS — ryzyko wskazane w harmonogramie). Do czasu interpretacji system parametryzuje stawkę w konfiguracji cennika, bez zakodowanego założenia.
+**[ROZSTRZYGNIĘTE] Stawka VAT jako parametr.** System nie zawiera zakodowanego założenia o zwolnieniu 43.1.32. Stawka jest polem w bazie „Pakiety i cennik" w Notion, ustawianym **per pozycja katalogu**, z datą obowiązywania.
+
+Konsekwencje projektowe:
+- Zmiana stawki po otrzymaniu interpretacji KIS to wpis w Notion, nie deployment.
+- Dokumenty wystawione wcześniej zachowują stawkę z momentu wystawienia (pole na dokumencie, nie odczyt z cennika) — inaczej korekta stawki zmieniałaby historię księgową wstecz.
+- Do czasu interpretacji cennik działa na stawce ustawionej ręcznie przez księgowość, ze statusem „przed interpretacją" widocznym w panelu.
 
 ---
 
@@ -613,7 +665,11 @@ Progi dopłat w linii B pochodzą z bazy „Progi ZFŚS", per organizacja — re
 - Kopie zapasowe szyfrowane, w UE, z regularnym testem odtworzenia
 - Rejestr i alertowanie anomalii: masowe eksporty, dostęp poza godzinami, nietypowe zapytania do dashboardu
 - Skanowanie zależności i sekretów w potoku CI
-- Testy penetracyjne przed uruchomieniem produkcyjnym **[DO DECYZJI: dostawca]**
+**[ROZSTRZYGNIĘTE] Testy penetracyjne.** Wykonawca: kompetencje z **Koalicji CyberC4HE / ekosystemu HCPL**. Uzasadnienie: zespół pracujący na co dzień z cyberbezpieczeństwem podmiotów leczniczych zna kontekst regulacyjny (NIS2, dane medyczne) lepiej niż generyczny dostawca pentestów.
+
+Zakres do uzgodnienia z wykonawcą: aplikacja webowa i API (OWASP ASVS) · aplikacja mobilna (OWASP MASVS) · kontrola dostępu między organizacjami — czy HR firmy X dosięgnie danych firmy Y · **próba deanonimizacji dashboardu HR** przez krzyżowanie filtrów (sekcja 10) · konfiguracja infrastruktury i backupów.
+
+Uwaga o niezależności: audyt „od swoich" jest tańszy i szybszy, ale przed organem trzeba móc wykazać niezależność oceny. Wykonawca nie może być tożsamy z zespołem budującym platformę — warunek do zapisania w zleceniu.
 
 ---
 
@@ -706,21 +762,43 @@ Rząd wielkości potwierdza założenie z dokumentu harmonogramu: **kilkadziesi�
 
 ---
 
-## 19. Decyzje do zatwierdzenia
+## 19. Rejestr decyzji
 
-Zebrane wszystkie punkty **[DO DECYZJI]**:
+Stan na 26 lipca 2026.
 
-1. **Wariant wdrożenia produkcyjnego** (3.4) — W1 / W2 / W3. *Odroczone świadomie do prototypu. Rekomendacja: W2.*
-2. **Zapis zwrotny do Notion dla obłożenia warsztatów** (5.4). *Rekomendacja: nie — widok w panelu admina.*
-3. **Minimalizacja danych wysyłanych do modelu językowego** (12.5). *Rekomendacja: tak, pseudonimizacja + redukcja zakresu.*
-4. **Stawka VAT / zwolnienie 43.1.32** (13) — do czasu interpretacji KIS parametr konfiguracyjny.
-5. **Dostawca testów penetracyjnych** (14).
-6. **Wyznaczenie IOD** (12.6) — czy w strukturze HCPL/FDP jest już powołany.
-7. **Repozytorium docelowe** — obecne repo `RSS` to menedżer kanałów RSS; projekt Longevity wymaga własnego repozytorium.
-8. **Walidacja medyczna reguł** (7.3) — kto po stronie zespołu akceptuje progi czerwonych flag.
+| # | Decyzja | Rozstrzygnięcie | Sekcja |
+|---|---|---|---|
+| 1 | Wariant wdrożenia produkcyjnego | **ODROCZONA** do prototypu. Rekomendacja utrzymana: W2 (VPS w PL/DE) | 3.4 |
+| 2 | Zapis zwrotny do Notion | **NIE** — synchronizacja jednokierunkowa bez wyjątków; obłożenie w panelu admina | 5.4 |
+| 3 | Zakres danych do modelu językowego | **Pseudonimizacja i redukcja** wg tabeli, z testem automatycznym | 12.5 |
+| 4 | Stawka VAT / zwolnienie 43.1.32 | **Parametr cennika** w Notion, per pozycja, z datą obowiązywania | 13 |
+| 5 | Testy penetracyjne | **Koalicja CyberC4HE / ekosystem HCPL**, z warunkiem niezależności od zespołu budującego | 14 |
+| 6 | Inspektor Ochrony Danych | **IOD HCPL, zakres rozszerzony na FDP** — aneks + zgłoszenie do UODO | 12.6 |
+| 7 | Repozytorium docelowe | **Nowe, dedykowane repozytorium** projektu Longevity | — |
+| 8 | Walidacja medyczna reguł | **Budowa na progach roboczych + imienna akceptacja lekarza**; blokada danych rzeczywistych do czasu akceptacji | 7.3 |
+
+### Zadania wynikające z decyzji — po stronie organizacji
+
+| Zadanie | Wynika z | Termin |
+|---|---|---|
+| Utworzenie repozytorium projektu | 7 | przed startem Fazy A |
+| Wskazanie imienne lekarza akceptującego reguły | 8 | równolegle do Fazy A |
+| Aneks zakresu IOD o FDP + zgłoszenie do UODO | 6 | równolegle do Fazy A |
+| Włączenie IOD w prace nad DPIA | 6 | **od początku** Fazy A |
+| Rozstrzygnięcie: współadministrowanie czy powierzenie HCPL–FDP | 6 | przed Fazą B |
+| Kontakt z CyberC4HE, ustalenie zakresu pentestów | 5 | przed Fazą C |
+| Wniosek o interpretację KIS (VAT 43.1.32) | 4 | przed skalowaniem |
+
+### Zadania po mojej stronie
+
+Wszystkie decyzje są naniesione na tę specyfikację. Do wykonania w Fazie A: implementacja warstwy minimalizacji z testem zakazanych pól (3) · synchronizator bez ścieżki zapisu do Notion (2) · stawka VAT jako pole, z utrwaleniem na dokumencie (4) · flaga `RULESET_STATUS` blokująca dane rzeczywiste (8).
 
 ---
 
-## 20. Co się dzieje po zatwierdzeniu
+## 20. Co się dzieje dalej
 
-Po akceptacji tego dokumentu (lub jego poprawionej wersji) uruchamiana jest **Faza A**. Pierwszy namacalny rezultat: działający przepływ od kwestionariusza przez Health Score do wygenerowanego planu, na danych syntetycznych, do pokazania na spotkaniu zespołu — i do rozstrzygnięcia decyzji 1.
+Decyzje 2–8 są podjęte i naniesione. Uruchamiana jest **Faza A**.
+
+Pierwszy namacalny rezultat: działający przepływ od kwestionariusza, przez deterministyczny Health Score i klasyfikację ryzyka, po wygenerowany plan i komplet dokumentów — na danych syntetycznych, do pokazania na spotkaniu zespołu.
+
+Ten prototyp jest jednocześnie podstawą do zamknięcia decyzji 1: dopiero widząc realne obciążenie, rozmiar bazy i czas generowania planu, można sensownie wybrać między W1, W2 a W3.
