@@ -1,0 +1,11 @@
+{
+  "name": "@longevity/notion-sync",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Synchronizacja Notion -> cache aplikacji, jednokierunkowa (ADR-02, decyzja 2)",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
