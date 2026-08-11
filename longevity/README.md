@@ -36,6 +36,11 @@ packages/core/               deterministyczny silnik reguł
 packages/model-payload/      minimalizacja danych do modelu (decyzja 3)
   src/forbidden.ts           lista pól zakazanych + skaner
   src/build.ts               budowa ładunku z białej listy
+packages/questionnaire/      kwestionariusz wstępny
+  src/definition.ts          10 domen, logika warunkowa, walidacja
+  src/conditions.ts          ewaluator warunków widoczności
+  src/validate.ts            walidacja odpowiedzi (Etap 1 pipeline'u)
+  src/normalize.ts           odpowiedzi → wejście silnika reguł
 ```
 
 ## Zasady, które kod egzekwuje

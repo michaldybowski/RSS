@@ -1,0 +1,14 @@
+{
+  "name": "@longevity/questionnaire",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Definicja kwestionariusza, logika warunkowa, walidacja i normalizacja do wejścia silnika reguł",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@longevity/core": "*"
+  }
+}

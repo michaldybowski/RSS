@@ -7,21 +7,10 @@
  * zmienić — dostaje je jako fakt, nie jako pytanie (ADR-03).
  */
 
-import type { Assessment, ParticipantIntake } from '@longevity/core';
+import type { Assessment, ParticipantIntake, PlanPreferences } from '@longevity/core';
 import { assertNoForbiddenFields } from './forbidden.ts';
 
-/** Cele i preferencje z Domeny 10, już oczyszczone z tekstu swobodnego. */
-export interface PlanPreferences {
-  goals: readonly string[];
-  planFormat: 'precyzyjny' | 'elastyczny' | 'zasady';
-  minutesPerSession: number;
-  daysAvailable: number;
-  timeWindows: readonly string[];
-  equipment: readonly string[];
-  dietaryPattern: string;
-  aversions: readonly string[];
-  movementLimitations: readonly string[];
-}
+export type { PlanPreferences };
 
 export interface ModelPayload {
   /** Identyfikator zapytania, nie użytkownika — do korelacji logów i ponowień. */
