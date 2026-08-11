@@ -1,0 +1,14 @@
+{
+  "name": "@longevity/model-payload",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Warstwa minimalizacji danych wysyłanych do modelu językowego (decyzja 3)",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@longevity/core": "*"
+  }
+}
