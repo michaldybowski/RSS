@@ -7,9 +7,19 @@
     "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "paths": {
-      "@longevity/core": ["packages/core/src/index.ts"]
+      "@longevity/core": [
+        "packages/core/src/index.ts"
+      ]
     },
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["packages/*/src/**/*.ts", "packages/*/test/**/*.ts"]
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/test/**/*.ts"
+  ],
+  "exclude": [
+    "apps/**"
+  ]
 }

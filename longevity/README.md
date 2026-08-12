@@ -20,6 +20,12 @@ npm run check     # typecheck + testy
 
 # Pełna droga na danych syntetycznych: kwestionariusz -> plan -> dokumenty
 CHROMIUM_PATH=/ścieżka/do/chrome npm run demo -- --out ./out
+
+# Panel uczestnika
+npm run panel:build && npm start --workspace @longevity/panel
+
+# Przejście przez panel jak użytkownik (panel musi działać)
+CHROMIUM_PATH=/ścieżka/do/chrome npm run panel:e2e -- --url http://127.0.0.1:3000
 ```
 
 Wymagany Node 22+. PDF powstaje przez Chromium w trybie bezgłowym; bez
@@ -31,6 +37,12 @@ procesu jako użytkownik bez uprawnień roota.
 ## Struktura
 
 ```
+apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
+  app/                       krok 0, kwestionariusz, podsumowanie, wynik
+  app/dokumenty/[format]/    pobieranie HTML, PDF, DOCX, iCal
+  lib/session.ts             stan sesji — WYŁĄCZNIE prototyp, do wymiany
+  middleware.ts              ustanowienie sesji przed renderowaniem
+  e2e/przejscie.mts          przejście przez panel w przeglądarce
 docs/                        specyfikacja techniczna
 packages/core/               deterministyczny silnik reguł
   src/calculations.ts        BMI, WHR, BMR, TDEE, HOMA-IR
