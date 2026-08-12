@@ -11,8 +11,8 @@ i panel uczestnika.
 **Faza B — w toku.** Gotowe: autoryzacja w kontekście organizacji, agregacja
 dashboardu HR z progiem k-anonimowości, rozliczenia A/B/C/G/M, prawa osoby
 i retencja, panel HR, warsztaty i obecności, panel trenera, audyt Zdrowe Biuro
-z certyfikacją, panel audytora oraz panel administratora. Zostaje: wyzwania
-i gamifikacja, biblioteka i Akademia.
+z certyfikacją, panel audytora, panel administratora oraz wyzwania
+i gamifikacja. Zostaje: biblioteka i Akademia.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -79,6 +79,8 @@ apps/admin/                  panel administratora — utrzymanie systemu
   lib/operacje.ts            jedyne wejście: autoryzacja + audit log
 apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
   app/                       krok 0, kwestionariusz, podsumowanie, wynik
+  app/wyzwania/              katalog z powodem wstrzymania, punkty, ranking
+  app/wyzwania/[id]/         wpis dzienny, passa, historia pomiarów
   app/dokumenty/[format]/    pobieranie HTML, PDF, DOCX, iCal
   lib/session.ts             stan sesji — WYŁĄCZNIE prototyp, do wymiany
   middleware.ts              ustanowienie sesji przed renderowaniem
@@ -137,6 +139,12 @@ packages/workshops/          warsztaty on-site
   src/enrollment.ts          zapisy, lista rezerwowa, awans po zwolnieniu
   src/attendance.ts          obecności, lista dla trenera, frekwencja
   src/settlement.ts          rozliczenie trenera
+packages/challenges/         wyzwania i gamifikacja (specyfikacja 9)
+  src/kwalifikacja.ts        kto może wziąć udział i dlaczego nie
+  src/pomiary.ts             okno wsteczne, zakresy, jeden dzień = jedna wartość
+  src/punkty.ts              próg zamiast licznika, limit dobowy, passa
+  src/postep.ts              próg ukończenia 80%, podsumowanie uczestnika
+  src/ranking.ts             ranking zespołowy powyżej progu k, własna pozycja
 packages/audit/              audyt i certyfikacja (specyfikacja 11)
   src/scoring.ts             wagi, "nie dotyczy" poza mianownikiem, ESRS S1
   src/workflow.ts            warunki zamknięcia, wydanie i weryfikacja
@@ -201,6 +209,20 @@ Wymuszone technicznie, nie regulaminowo:
 16. **Realizacja wniosku RODO to nie odczyt danych.** Administrator uruchamia
     eksport i wykonuje usunięcie, ale pakiet jest zapieczętowany: panel dostaje
     metadane, treść otwiera osoba tokenem przekazanym poza panelem.
+17. **Gamifikacja nie popycha do tego, co odradza ocena ryzyka.** Wyzwania
+    wysiłkowe są zamknięte przy kategorii CZERWONEJ i przy flagach wykluczających
+    wysiłek — ale sen, nawodnienie i nawyki zostają dostępne, bo odcięcie takiej
+    osoby od całego programu byłoby drugą szkodą. Wyzwanie niedostępne widać
+    na liście razem z powodem; nie znika bez słowa.
+18. **Punkty nagradzają regularność, nie wyczyn.** Przekroczenie celu nie daje
+    dodatkowych punktów, dobowa suma ze wszystkich wyzwań jest ograniczona,
+    a passy nie kasuje jeden dzień przerwy — passa, którą kończy dzień choroby,
+    uczy ćwiczyć na chorobie. Punktów nie da się wymienić na pieniądze ani na
+    zniżkę na świadczenie: typ nagrody nie ma takiego wariantu.
+19. **Rankingu imiennego nie ma.** Uczestnik poznaje własną pozycję jako liczbę;
+    zestawienia zespołowe obejmują tylko zespoły powyżej progu k-anonimowości
+    i pokazują średnią, nie sumę. Zespół poniżej progu nie jest wymieniony
+    nawet z nazwy.
 
 ## Dokumenty
 

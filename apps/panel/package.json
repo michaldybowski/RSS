@@ -9,6 +9,7 @@
     "start": "next start -p 3000"
   },
   "dependencies": {
+    "@longevity/challenges": "*",
     "@longevity/consent": "*",
     "@longevity/core": "*",
     "@longevity/documents": "*",

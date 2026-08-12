@@ -291,6 +291,61 @@ try {
     (naglowki['cache-control'] ?? '').includes('no-store'),
     'dokumenty oznaczone jako niebuforowalne',
   );
+  // --- wyzwania i gamifikacja ----------------------------------------------
+  await page.goto(`${baseUrl}/wynik`);
+  await page.click('a:has-text("Przejdź do wyzwań")');
+  await page.waitForSelector('h1:has-text("Wyzwania")', { timeout: 30_000 });
+
+  const wyzwania = await page.content();
+  sprawdz(wyzwania.includes('10 tysięcy kroków'), 'katalog wyzwań otwarty');
+  sprawdz(
+    Number((await page.locator('.wynik-liczba').innerText()).trim()) > 0,
+    'punkty policzone z historii pomiarów',
+  );
+
+  // Wyzwanie spoza pakietu zostaje na liście razem z powodem.
+  sprawdz(wyzwania.includes('Protokół regeneracji PRIME'), 'wyzwanie spoza pakietu widoczne');
+  sprawdz(wyzwania.includes('Wyzwanie wstrzymane'), 'niedostępne wyzwanie ma jawny powód');
+
+  // Ranking: próg k odcina mały zespół razem z nazwą.
+  sprawdz(wyzwania.includes('Produkcja') && wyzwania.includes('Biuro'), 'zespoły powyżej progu w rankingu');
+  sprawdz(!wyzwania.includes('Serwis'), 'zespół poniżej progu nie jest nazwany');
+  sprawdz(!/psd-(prod|biuro|serwis)-/u.test(wyzwania), 'ranking nie ujawnia pseudonimów innych osób');
+  await zrzut(page, '06-wyzwania');
+
+  // Dołączenie do wyzwania i wpis dzienny.
+  await page.click('.wyzwanie:has-text("Dwa litry wody") button:has-text("Dołącz")');
+  // Czekamy na link w karcie tego konkretnego wyzwania — ogólne
+  // „Otwórz — jesteś zapisany" jest na stronie od początku, przy krokach,
+  // więc oczekiwanie na nie przechodziłoby przed przeładowaniem.
+  await page.waitForSelector('.wyzwanie:has-text("Dwa litry wody") a:has-text("Otwórz")', {
+    timeout: 30_000,
+  });
+  sprawdz(true, 'zapis do nowego wyzwania widoczny w jego karcie');
+
+  await page.goto(`${baseUrl}/wyzwania/w-kroki`);
+  await page.waitForSelector('h1:has-text("10 tysięcy kroków")', { timeout: 30_000 });
+  const szczegoly = await page.content();
+  sprawdz(szczegoly.includes('Passa'), 'szczegóły wyzwania z passą');
+  sprawdz(szczegoly.includes('urządzenie'), 'historia rozróżnia źródło pomiaru');
+
+  // Wpis poza oknem wstecznym ma wrócić komunikatem, nie stroną błędu.
+  await page.fill('#wartosc', '11000');
+  await page.fill('#dzien', '2026-07-18');
+  await page.click('button:has-text("Zapisz wynik")');
+  await page.waitForSelector('.blad', { timeout: 30_000 });
+  sprawdz(
+    (await page.locator('.blad').innerText()).includes('poza oknem'),
+    'ręczne uzupełnianie odległych dni odrzucone z powodem',
+  );
+
+  // Wpis za dziś przechodzi i trafia do historii jako ręczny.
+  await page.fill('#wartosc', '10500');
+  await page.fill('#dzien', '2026-07-26');
+  await page.click('button:has-text("Zapisz wynik")');
+  await page.waitForSelector('td:has-text("wpis ręczny")', { timeout: 30_000 });
+  sprawdz(true, 'wpis dzienny zapisany');
+  await zrzut(page, '07-wyzwanie');
 } finally {
   await browser.close();
 }

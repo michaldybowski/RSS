@@ -158,6 +158,18 @@ export default async function Wynik() {
         </ul>
       </div>
 
+      <div className="karta">
+        <h2 style={{ marginTop: 0 }}>Wyzwania</h2>
+        <p style={{ marginTop: 0 }}>
+          Dobór wyzwań wynika z tej samej oceny co plan. Te, które wymagają wysiłku
+          niewskazanego przy Twojej kategorii ryzyka, zobaczysz z podanym powodem —
+          nie znikną bez wyjaśnienia.
+        </p>
+        <a className="przycisk" href="/wyzwania">
+          Przejdź do wyzwań
+        </a>
+      </div>
+
       <form action={startOver}>
         <div className="akcje">
           <button type="submit" className="wtorny">

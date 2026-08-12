@@ -13,9 +13,11 @@
 import { cookies } from 'next/headers';
 
 import { COOKIE_NAME } from './cookie.ts';
+import { historiaDemo } from './wyzwania.ts';
 
 import type { Assessment, ParticipantIntake, PlanPreferences } from '@longevity/core';
 import type { ConsentLedger } from '@longevity/consent';
+import type { Pomiar, Zapis } from '@longevity/challenges';
 import type { AnswerValue, ValidationIssue } from '@longevity/questionnaire';
 import type { PipelineResult } from '@longevity/plan';
 
@@ -39,12 +41,21 @@ export interface PanelSession {
   preferences?: PlanPreferences;
   assessment?: Assessment;
   result?: PipelineResult;
+  /** Zapisy do wyzwań i pomiary. W produkcji: tabele uczestnika w Postgresie. */
+  zapisy: Zapis[];
+  pomiary: Pomiar[];
+  /** Powód odrzucenia ostatniego wpisu — pokazywany przy formularzu. */
+  bladPomiaru?: string | undefined;
 }
 
 const sessions = new Map<string, PanelSession>();
 
 function create(id: string): PanelSession {
-  return { id, ledger: [], answers: {}, stepIssues: {}, consentAttempted: false };
+  // Historia wyzwań jest zasiana danymi demonstracyjnymi — ekran gamifikacji
+  // z samymi zerami nie pokazuje ani passy, ani limitu, ani progu ukończenia.
+  const { zapisy, pomiary } = historiaDemo();
+
+  return { id, ledger: [], answers: {}, stepIssues: {}, consentAttempted: false, zapisy, pomiary };
 }
 
 /** Zwraca sesję dla bieżącego ciasteczka; tworzy nową, jeśli nie ma. */

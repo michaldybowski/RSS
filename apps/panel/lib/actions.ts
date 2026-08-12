@@ -21,10 +21,18 @@ import {
   type AnswerValue,
 } from '@longevity/questionnaire';
 import { generatePlan } from '@longevity/plan';
+import { dolacz, zapiszPomiar } from '@longevity/challenges';
 
 import { PROTOTYPE_MODEL } from './prototypeModel.ts';
 import { ensureSessionCookie, getSession, resetSession, saveSession } from './session.ts';
 import { NOW, ONBOARDING_CONSENTS } from './config.ts';
+import {
+  DZISIAJ,
+  PAKIET_UCZESTNIKA,
+  SUBJECT_REF,
+  wyzwaniePoId,
+  ZESPOL_UCZESTNIKA,
+} from './wyzwania.ts';
 
 const EVIDENCE = { ipHash: 'prototyp', userAgentHash: 'prototyp' };
 
@@ -130,4 +138,63 @@ export async function submitIntake(): Promise<void> {
 export async function startOver(): Promise<void> {
   await resetSession();
   redirect('/');
+}
+
+/**
+ * Zapis do wyzwania.
+ *
+ * Kwalifikacja jest sprawdzana w pakiecie, nie tutaj — `dolacz` rzuca
+ * wyjątkiem, gdy ocena ryzyka odradza tę metrykę. Panel nie decyduje
+ * o dopuszczeniu, tylko pokazuje decyzję.
+ */
+export async function dolaczDoWyzwania(formData: FormData): Promise<void> {
+  const session = await getSession();
+  if (session.assessment === undefined) redirect('/');
+
+  const wyzwanie = wyzwaniePoId(String(formData.get('wyzwanieId') ?? ''));
+  if (wyzwanie === undefined) redirect('/wyzwania');
+
+  const zapis = dolacz(
+    wyzwanie,
+    { ocena: session.assessment, pakiet: PAKIET_UCZESTNIKA },
+    SUBJECT_REF,
+    DZISIAJ,
+    wyzwanie.typ === 'zespolowe' ? ZESPOL_UCZESTNIKA : undefined,
+  );
+
+  session.zapisy = [...session.zapisy, zapis];
+  saveSession(session);
+  revalidatePath(`/wyzwania/${wyzwanie.id}`);
+  revalidatePath('/wyzwania');
+}
+
+/** Wpis dzienny. Odrzucenie pomiaru wraca do uczestnika jako komunikat. */
+export async function zapiszWynikDnia(formData: FormData): Promise<void> {
+  const session = await getSession();
+  const wyzwanieId = String(formData.get('wyzwanieId') ?? '');
+
+  const wyzwanie = wyzwaniePoId(wyzwanieId);
+  const zapis = session.zapisy.find((pozycja) => pozycja.wyzwanieId === wyzwanieId);
+  if (wyzwanie === undefined || zapis === undefined) redirect('/wyzwania');
+
+  const wartosc = Number(formData.get('wartosc'));
+  const dzien = String(formData.get('dzien') ?? DZISIAJ);
+
+  try {
+    session.pomiary = [
+      ...zapiszPomiar(
+        session.pomiary,
+        { wyzwanieId, dzien, wartosc, zrodlo: 'reczne' },
+        { wyzwanie, od: zapis.od, dzisiaj: DZISIAJ },
+      ),
+    ];
+    session.bladPomiaru = undefined;
+  } catch (blad) {
+    // Odrzucenie pomiaru jest normalnym wynikiem, nie awarią — uczestnik
+    // ma zobaczyć powód przy formularzu, a nie stronę błędu.
+    session.bladPomiaru = blad instanceof Error ? blad.message : 'Nie udało się zapisać pomiaru.';
+  }
+
+  saveSession(session);
+  revalidatePath(`/wyzwania/${wyzwanieId}`);
 }

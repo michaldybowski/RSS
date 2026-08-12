@@ -140,3 +140,22 @@ th { background: #f2f4f6; }
 
 ul.zwykla { margin: 8px 0; padding-left: 20px; }
 ul.zwykla li { margin: 4px 0; }
+
+/* Wyzwania */
+.wyzwanie { padding: 14px 0; border-bottom: 1px solid var(--linia); }
+.wyzwanie:last-child { border-bottom: none; }
+.wyzwanie-naglowek { display: flex; gap: 10px; align-items: baseline; }
+.wyzwanie-nazwa { font-weight: 600; flex: 1; }
+.znacznik { font-size: 12px; background: var(--akcent-slaby); color: var(--akcent); padding: 2px 9px; border-radius: 999px; }
+.odznaki { list-style: none; padding: 0; margin: 8px 0 0; }
+.odznaki li { padding: 8px 0; border-bottom: 1px dashed var(--linia); }
+.odznaki li:last-child { border-bottom: none; }
+.kafle { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.kafel { background: var(--tlo); border: 1px solid var(--linia); border-radius: var(--promien); padding: 14px 16px; }
+.kafel-etykieta { font-size: 13px; color: var(--tekst-slaby); }
+.kafel-wartosc { font-size: 24px; font-weight: 700; margin-top: 4px; }
+.wstrzymane { background: #fdf1dc; border-left: 3px solid var(--zolta); padding: 12px 14px; border-radius: 0 var(--promien) var(--promien) 0; }
+.wstrzymane h3 { margin: 0 0 4px; font-size: 15px; }
+.wstrzymane p { margin: 0; font-size: 15px; }
+.mala { font-size: 13px; color: var(--tekst-slaby); }
+.poziom-znacznik { display: inline-block; padding: 4px 14px; border-radius: 999px; font-weight: 600; font-size: 14px; background: var(--akcent-slaby); color: var(--akcent); }
