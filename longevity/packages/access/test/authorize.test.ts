@@ -1,7 +1,14 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { AccessDeniedError, assertCan, can, hasRole } from '../src/authorize.ts';
+import {
+  AccessDeniedError,
+  AKCJE_ADMINISTRACYJNE,
+  assertCan,
+  can,
+  czyAkcjaAdministracyjna,
+  hasRole,
+} from '../src/authorize.ts';
 import type { Action, Actor, Resource } from '../src/types.ts';
 
 const FIRMA_X = 'org-x';
@@ -120,8 +127,10 @@ describe('trener i audytor', () => {
 });
 
 describe('administrator', () => {
-  test('zarządza synchronizacją', () => {
-    assert.equal(can(admin, 'zarzadzanie_synchronizacja', { kind: 'system' }).allowed, true);
+  test('wykonuje wszystkie operacje systemowe', () => {
+    for (const akcja of AKCJE_ADMINISTRACYJNE) {
+      assert.equal(can(admin, akcja, { kind: 'system' }).allowed, true, akcja);
+    }
   });
 
   test('nie jest wytrychem do danych zdrowotnych', () => {
@@ -129,6 +138,32 @@ describe('administrator', () => {
     // tego zrobić „bo jest adminem".
     assert.equal(can(admin, 'odczyt_karty_pacjenta', osoba('u-1')).allowed, false);
     assert.equal(can(admin, 'odczyt_dashboardu', firma(FIRMA_X)).allowed, false);
+    assert.equal(can(admin, 'odczyt_rozliczen', firma(FIRMA_X)).allowed, false);
+  });
+
+  test('operacja administracyjna nie działa na zasobie osoby', () => {
+    // Zgoda jest związana z zasobem `system`. Podanie uczestnika jako zasobu
+    // operacji administracyjnej to pomyłka wywołania — i ma być odmową,
+    // a nie przypadkowo szerszym uprawnieniem.
+    for (const akcja of AKCJE_ADMINISTRACYJNE) {
+      assert.equal(can(admin, akcja, osoba('u-1')).allowed, false, akcja);
+      assert.equal(can(admin, akcja, firma(FIRMA_X)).allowed, false, `${akcja} / organizacja`);
+    }
+  });
+
+  test('rola HR nie sięga po operacje administracyjne', () => {
+    for (const akcja of AKCJE_ADMINISTRACYJNE) {
+      assert.equal(can(hr(FIRMA_X), akcja, { kind: 'system' }).allowed, false, akcja);
+    }
+  });
+
+  test('obsługa wniosków RODO nie otwiera drogi do treści danych', () => {
+    // Realizacja wniosku i odczyt danych to dwie różne operacje. Pierwszą
+    // administrator wykonuje, drugiej nie — także wobec osoby, której
+    // wniosek dotyczy.
+    assert.equal(can(admin, 'obsluga_wnioskow_rodo', { kind: 'system' }).allowed, true);
+    assert.equal(can(admin, 'odczyt_karty_pacjenta', osoba('u-1')).allowed, false);
+    assert.equal(can(admin, 'odczyt_wlasnych_danych', osoba('u-1')).allowed, false);
   });
 });
 
@@ -149,6 +184,10 @@ const WSZYSTKIE_AKCJE: Record<Action, true> = {
   zapis_audytu: true,
   odczyt_rozliczen: true,
   zarzadzanie_synchronizacja: true,
+  odczyt_logu_synchronizacji: true,
+  obsluga_wnioskow_rodo: true,
+  wykonanie_retencji: true,
+  odczyt_stanu_systemu: true,
 };
 
 describe('domyślna odmowa', () => {
@@ -158,6 +197,15 @@ describe('domyślna odmowa', () => {
     for (const akcja of Object.keys(WSZYSTKIE_AKCJE) as Action[]) {
       assert.equal(can(nikt, akcja, firma(FIRMA_X)).allowed, false, akcja);
       assert.equal(can(nikt, akcja, { kind: 'system' }).allowed, false, `${akcja} / system`);
+    }
+  });
+
+  test('poza listą operacji administracyjnych admin nie może nic', () => {
+    // Lista AKCJE_ADMINISTRACYJNE jest pełnym zakresem uprawnień administratora,
+    // a nie tylko ich częścią wygodną do wypisania.
+    for (const akcja of Object.keys(WSZYSTKIE_AKCJE) as Action[]) {
+      if (czyAkcjaAdministracyjna(akcja)) continue;
+      assert.equal(can(admin, akcja, { kind: 'system' }).allowed, false, akcja);
     }
   });
 

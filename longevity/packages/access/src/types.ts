@@ -17,7 +17,11 @@ export type Action =
   | 'zapis_obecnosci'
   | 'zapis_audytu'
   | 'odczyt_rozliczen'
-  | 'zarzadzanie_synchronizacja';
+  | 'zarzadzanie_synchronizacja'
+  | 'odczyt_logu_synchronizacji'
+  | 'obsluga_wnioskow_rodo'
+  | 'wykonanie_retencji'
+  | 'odczyt_stanu_systemu';
 
 /** Nadanie roli. Brak `organizationId` oznacza rolę globalną — tylko dla admina. */
 export interface RoleGrant {

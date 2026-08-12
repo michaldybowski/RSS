@@ -19,6 +19,7 @@ export type AkcjaAudytu =
   | 'eksport_danych'
   | 'usuniecie_danych'
   | 'zmiana_zgody'
+  | 'synchronizacja_tresci'
   | 'logowanie';
 
 export interface WpisAudytu {
@@ -108,6 +109,10 @@ export const OPERACJE_WYMAGAJACE_LOGU: readonly AkcjaAudytu[] = [
   'eksport_danych',
   'usuniecie_danych',
   'zmiana_zgody',
+  // Import z Notion nie dotyka danych zdrowotnych, ale zmienia cennik i progi
+  // ZFŚS — czyli kwoty na notach. Bez wpisu nie da się odpowiedzieć na pytanie,
+  // kto i kiedy wpuścił do systemu inną cenę.
+  'synchronizacja_tresci',
 ];
 
 export function wymagaLogu(akcja: AkcjaAudytu): boolean {

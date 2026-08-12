@@ -4,10 +4,14 @@ import assert from 'node:assert/strict';
 import {
   czyNieprzypisywalny,
   doFormatuPrzenoszalnego,
+  OPIS_RODZAJU,
+  opisRodzaju,
   PamieciowyAuditLog,
+  rekordy,
   POLITYKA_RETENCJI,
   regulaDla,
   terminRetencji,
+  wykonajRetencje,
   wykonajUsuniecie,
   wymagalne,
   wymagaLogu,
@@ -100,6 +104,7 @@ describe('audit log', () => {
   test('operacje na danych zdrowotnych wymagają logu', () => {
     assert.equal(wymagaLogu('odczyt_danych_zdrowotnych'), true);
     assert.equal(wymagaLogu('przekazanie_do_modelu'), true);
+    assert.equal(wymagaLogu('synchronizacja_tresci'), true);
     assert.equal(wymagaLogu('logowanie'), false);
   });
 
@@ -195,6 +200,71 @@ describe('retencja', () => {
     const przed = dane.rekordy.length;
     wymagalne(dane.rekordy, dane.uczestnictwo, '2032-01-01');
     assert.equal(dane.rekordy.length, przed);
+  });
+
+  test('wykonanie retencji usuwa to, co wymagalne, i zostawia resztę', () => {
+    const przed = zbior();
+    const { zbior: po, wykonane } = wykonajRetencje(przed, '2030-01-01');
+
+    // Na tę datę wymagalne są: kwestionariusz, plan, health_score, zgoda,
+    // dziennik objawów i surowe wearables. Audit log i dokument księgowy
+    // mają dłuższe terminy i zostają.
+    assert.equal(wykonane.length, 6);
+    assert.deepEqual(
+      po.rekordy.map((r) => r.rodzaj).sort(),
+      ['audit_log', 'dokument_ksiegowy', 'wearables_dobowe'],
+    );
+    assert.equal(przed.rekordy.length, 8, 'wykonanie retencji zmodyfikowało wejście');
+  });
+
+  test('agregacja kasuje surowe próbki, zostawiając ślad dobowy', () => {
+    const { zbior: po } = wykonajRetencje(zbior(), '2029-01-01');
+    const dobowy = po.rekordy.find((r) => r.rodzaj === 'wearables_dobowe');
+
+    assert.ok(dobowy, 'brak rekordu dobowego po agregacji');
+    assert.equal(po.rekordy.some((r) => r.rodzaj === 'wearables_surowe'), false);
+    assert.deepEqual(dobowy.dane, { zrodlo: 'r-5', zagregowano: '2029-01-01' });
+  });
+
+  test('przed terminami wykonanie retencji nie rusza niczego', () => {
+    const { zbior: po, wykonane } = wykonajRetencje(zbior(), '2027-01-01');
+    assert.equal(wykonane.length, 0);
+    assert.equal(po.rekordy.length, 8);
+  });
+});
+
+describe('etykiety', () => {
+  test('żadna nazwa nie wygląda jak identyfikator z bazy', () => {
+    // Jednowyrazowe kody („plan") bywają zarazem poprawną nazwą — sprawdzamy
+    // więc kształt, a nie różnicę wobec kodu.
+    for (const [kod, opis] of Object.entries(OPIS_RODZAJU)) {
+      assert.ok(opis.length > 0, kod);
+      assert.equal(/_/.test(opis), false, `nazwa "${opis}" wygląda jak identyfikator`);
+    }
+  });
+
+  test('kody wielowyrazowe dostały prawdziwe nazwy', () => {
+    assert.equal(OPIS_RODZAJU.wearables_surowe, 'surowe dane z urządzeń');
+    assert.equal(OPIS_RODZAJU.tozsamosc, 'dane identyfikacyjne');
+    assert.equal(OPIS_RODZAJU.dokument_ksiegowy, 'dokumenty księgowe');
+  });
+
+  test('nieznany rodzaj nie wywraca opisu', () => {
+    assert.equal(opisRodzaju('cos_nowego'), 'cos_nowego');
+  });
+
+  test('liczebnik odmienia rekordy', () => {
+    assert.equal(rekordy(1), '1 rekord');
+    assert.equal(rekordy(2), '2 rekordy');
+    assert.equal(rekordy(5), '5 rekordów');
+    assert.equal(rekordy(12), '12 rekordów');
+    assert.equal(rekordy(22), '22 rekordy');
+    assert.equal(rekordy(0), '0 rekordów');
+  });
+
+  test('potwierdzenie usunięcia jest napisane po polsku', () => {
+    const { potwierdzenie } = wykonajUsuniecie(zbior(), 'w-1', '2026-08-01');
+    assert.match(potwierdzenie.komunikat, /Zachowano 2 rekordy,/);
   });
 });
 

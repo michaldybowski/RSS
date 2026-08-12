@@ -11,8 +11,8 @@ i panel uczestnika.
 **Faza B — w toku.** Gotowe: autoryzacja w kontekście organizacji, agregacja
 dashboardu HR z progiem k-anonimowości, rozliczenia A/B/C/G/M, prawa osoby
 i retencja, panel HR, warsztaty i obecności, panel trenera, audyt Zdrowe Biuro
-z certyfikacją i panel audytora. Zostaje: panel admina, wyzwania i gamifikacja,
-biblioteka i Akademia.
+z certyfikacją, panel audytora oraz panel administratora. Zostaje: wyzwania
+i gamifikacja, biblioteka i Akademia.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -44,6 +44,10 @@ CHROMIUM_PATH=/ścieżka/do/chrome npm run trener:e2e -- --url http://127.0.0.1:
 # Panel audytora (przebieg e2e jest jednorazowy — serwer na świeżo)
 npm run audytor:build && npm start --workspace @longevity/audytor
 CHROMIUM_PATH=/ścieżka/do/chrome npm run audytor:e2e -- --url http://127.0.0.1:3003
+
+# Panel administratora (przebieg e2e jest jednorazowy — serwer na świeżo)
+npm run admin:build && npm start --workspace @longevity/admin
+CHROMIUM_PATH=/ścieżka/do/chrome npm run admin:e2e -- --url http://127.0.0.1:3004
 ```
 
 Wymagany Node 22+. PDF powstaje przez Chromium w trybie bezgłowym; bez
@@ -67,6 +71,12 @@ apps/trener/                 panel trenera — warsztaty i obecności
 apps/audytor/                panel audytora — Zdrowe Biuro i certyfikacja
   app/audyty/[id]/           arkusz kryteriów z wynikiem i listą braków
   app/rejestr/               publiczna weryfikacja numeru certyfikatu
+apps/admin/                  panel administratora — utrzymanie systemu
+  app/synchronizacja/        zapowiedź różnic, potwierdzenie źródeł krytycznych
+  app/rodo/                  wnioski osób; metadane pakietu zamiast treści
+  app/retencja/              zadania wymagalne i ich wykonanie
+  app/stan/                  wersje reguł i warunki przed produkcją
+  lib/operacje.ts            jedyne wejście: autoryzacja + audit log
 apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
   app/                       krok 0, kwestionariusz, podsumowanie, wynik
   app/dokumenty/[format]/    pobieranie HTML, PDF, DOCX, iCal
@@ -121,6 +131,8 @@ packages/gdpr/               prawa osoby i retencja (12.3-12.4)
   src/retention.ts           trzy punkty odniesienia, sweeper zadań
   src/export.ts              pakiet art. 15 i 20
   src/erasure.ts             usunięcie w trzech kategoriach + potwierdzenie
+  src/wnioski.ts             rejestr wniosków, termin 30 dni, pakiet za tokenem
+  src/etykiety.ts            nazwy rodzajów rekordów po polsku
 packages/workshops/          warsztaty on-site
   src/enrollment.ts          zapisy, lista rezerwowa, awans po zwolnieniu
   src/attendance.ts          obecności, lista dla trenera, frekwencja
@@ -134,6 +146,7 @@ packages/notion-sync/        synchronizacja Notion -> cache (ADR-02)
   src/props.ts               odczyt właściwości z raportowaniem problemów
   src/rateLimit.ts           odstępy między żądaniami i ponowienia
   src/sync.ts                orkiestracja: tryb pełny i przyrostowy
+  src/preview.ts             zapowiedź różnic bez zapisu; źródła krytyczne
 ```
 
 ## Zasady, które kod egzekwuje
@@ -182,6 +195,12 @@ Wymuszone technicznie, nie regulaminowo:
 14. **Certyfikatu nie da się wydać na skróty.** Audyt zamyka się dopiero po
     ocenieniu wszystkich kryteriów i załączeniu dowodów tam, gdzie standard ich
     wymaga; certyfikat powstaje wyłącznie z zamkniętego audytu powyżej progu.
+15. **Cennik i progi ZFŚS nie wjeżdżają bez obejrzenia zmian.** Import tych
+    dwóch źródeł wymaga potwierdzenia zapowiedzi różnic — pomyłka w Notion
+    przekłada się stamtąd wprost na kwoty na notach.
+16. **Realizacja wniosku RODO to nie odczyt danych.** Administrator uruchamia
+    eksport i wykonuje usunięcie, ale pakiet jest zapieczętowany: panel dostaje
+    metadane, treść otwiera osoba tokenem przekazanym poza panelem.
 
 ## Dokumenty
 

@@ -13,6 +13,12 @@ import type { CachedRecord, SourceCode, SyncLogEntry } from './types.ts';
 export interface CacheStore {
   /** Mapa notionId → hash dla rekordów aktywnych i zarchiwizowanych. */
   hashes: (source: SourceCode) => Promise<ReadonlyMap<string, string>>;
+  /**
+   * Bieżąca zawartość cache dla źródła. Potrzebna zapowiedzi synchronizacji:
+   * żeby pokazać różnicę, trzeba znać poprzednią wartość, a nie tylko jej skrót.
+   * Odczyt — kontrakt nadal nie ma drogi zapisu do Notion.
+   */
+  current: (source: SourceCode) => Promise<readonly CachedRecord[]>;
   upsert: (records: readonly CachedRecord[]) => Promise<void>;
   /**
    * Oznacza jako zarchiwizowane rekordy, których nie było w imporcie.
@@ -54,6 +60,10 @@ export class InMemoryCacheStore implements CacheStore {
       if (record.source === source) result.set(record.notionId, record.hash);
     }
     return result;
+  }
+
+  async current(source: SourceCode): Promise<readonly CachedRecord[]> {
+    return this.list(source);
   }
 
   async upsert(records: readonly CachedRecord[]): Promise<void> {
