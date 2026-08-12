@@ -1,0 +1,23 @@
+{
+  "name": "@longevity/hr",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Panel HR — agregaty i rozliczenia, prototyp na danych syntetycznych",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001"
+  },
+  "dependencies": {
+    "@longevity/access": "*",
+    "@longevity/analytics": "*",
+    "@longevity/billing": "*",
+    "@longevity/gdpr": "*",
+    "next": "^15.5.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18"
+  }
+}
