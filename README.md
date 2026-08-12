@@ -10,8 +10,9 @@ i panel uczestnika.
 
 **Faza B — w toku.** Gotowe: autoryzacja w kontekście organizacji, agregacja
 dashboardu HR z progiem k-anonimowości, rozliczenia A/B/C/G/M, prawa osoby
-i retencja, panel HR, warsztaty i obecności. Zostaje: panele trenera, audytora
-i admina, wyzwania i gamifikacja, biblioteka i Akademia, audyt Zdrowe Biuro.
+i retencja, panel HR, warsztaty i obecności, panel trenera. Zostaje: panel
+audytora i admina, wyzwania i gamifikacja, biblioteka i Akademia, audyt
+Zdrowe Biuro.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -35,6 +36,10 @@ CHROMIUM_PATH=/ścieżka/do/chrome npm run panel:e2e -- --url http://127.0.0.1:3
 # Panel HR
 npm run hr:build && npm start --workspace @longevity/hr
 CHROMIUM_PATH=/ścieżka/do/chrome npm run hr:e2e -- --url http://127.0.0.1:3001
+
+# Panel trenera
+npm run trener:build && npm start --workspace @longevity/trener
+CHROMIUM_PATH=/ścieżka/do/chrome npm run trener:e2e -- --url http://127.0.0.1:3002
 ```
 
 Wymagany Node 22+. PDF powstaje przez Chromium w trybie bezgłowym; bez
@@ -51,6 +56,10 @@ apps/hr/                     panel HR — agregaty i rozliczenia
   app/rozliczenia/           dokumenty wg linii finansowania
   app/dziennik/              dziennik dostępu z zapisem filtrów
   lib/zapytania.ts           jedyne wejście do danych: autoryzacja + audit log
+apps/trener/                 panel trenera — warsztaty i obecności
+  app/warsztaty/             lista własnych warsztatów ze stanem i frekwencją
+  app/warsztaty/[id]/        lista obecności; blokada przed rozpoczęciem
+  app/rozliczenie/           pozycje wstrzymane bez listy obecności
 apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
   app/                       krok 0, kwestionariusz, podsumowanie, wynik
   app/dokumenty/[format]/    pobieranie HTML, PDF, DOCX, iCal
