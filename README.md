@@ -11,8 +11,7 @@ i panel uczestnika.
 **Faza B — w toku.** Gotowe: autoryzacja w kontekście organizacji, agregacja
 dashboardu HR z progiem k-anonimowości, rozliczenia A/B/C/G/M, prawa osoby
 i retencja, panel HR, warsztaty i obecności. Zostaje: panele trenera, audytora
-i admina, wyzwania
-i gamifikacja, biblioteka i Akademia, audyt Zdrowe Biuro.
+i admina, wyzwania i gamifikacja, biblioteka i Akademia, audyt Zdrowe Biuro.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -120,7 +119,7 @@ packages/notion-sync/        synchronizacja Notion -> cache (ADR-02)
 
 ## Zasady, które kod egzekwuje
 
-Trzy rzeczy są wymuszone technicznie, nie regulaminowo:
+Wymuszone technicznie, nie regulaminowo:
 
 1. **Scoring jest deterministyczny.** Health Score, kategoria ryzyka i czerwone
    flagi liczone są regułami. Model językowy ich nie widzi jako pytania — dostaje
