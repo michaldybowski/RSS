@@ -1,0 +1,11 @@
+{
+  "name": "@longevity/billing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Rozliczenia w liniach A/B/C/G/M (specyfikacja 13)",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
