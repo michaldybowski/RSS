@@ -17,9 +17,16 @@ zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
 ```bash
 npm install
 npm run check     # typecheck + testy
+
+# Pełna droga na danych syntetycznych: kwestionariusz -> plan -> dokumenty
+CHROMIUM_PATH=/ścieżka/do/chrome npm run demo -- --out ./out
 ```
 
-Wymagany Node 22+.
+Wymagany Node 22+. PDF powstaje przez Chromium w trybie bezgłowym; bez
+`CHROMIUM_PATH` demo generuje HTML, DOCX i iCal, a PDF pomija.
+W kontenerze działającym jako root potrzebne jest dodatkowo
+`CHROMIUM_NO_SANDBOX=1` — właściwym rozwiązaniem jest jednak uruchomienie
+procesu jako użytkownik bez uprawnień roota.
 
 ## Struktura
 
@@ -45,6 +52,12 @@ packages/consent/            model zgód (specyfikacja 12.1-12.3)
   src/definitions.ts         katalog zgód z podstawą prawną i skutkiem wycofania
   src/ledger.ts              rejestr zdarzeń tylko do dopisywania
   src/gates.ts               bramki operacji, tryb generowania planu
+packages/documents/          generowanie dokumentów
+  src/model.ts               5 dokumentów pakietu konsultacyjnego + plan
+  src/html.ts                kanoniczny HTML: podgląd, wydruk, źródło PDF
+  src/pdf.ts                 PDF przez Chromium; silnik wstrzykiwany
+  src/docx.ts                wersja edytowalna dla lekarza
+  src/ics.ts                 kalendarz RFC 5545
 packages/plan/               pipeline generowania planu (specyfikacja 8)
   src/plan.ts                schemat planu i zastrzeżenie platformy
   src/validate.ts            walidacja strukturalna odpowiedzi modelu
