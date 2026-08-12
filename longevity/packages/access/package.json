@@ -1,0 +1,11 @@
+{
+  "name": "@longevity/access",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Autoryzacja w kontekście organizacji (specyfikacja 4.1)",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
