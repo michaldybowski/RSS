@@ -24,6 +24,29 @@ export function hasRole(actor: Actor, role: Role, organizationId?: string): bool
   });
 }
 
+/**
+ * Operacje systemowe administratora. Lista jest zamknięta i celowo krótka —
+ * każda pozycja to czynność utrzymaniowa, a nie odczyt danych uczestnika.
+ *
+ * Obsługa wniosków RODO jest tu wyjątkiem wymagającym wyjaśnienia: administrator
+ * *realizuje* wniosek (uruchamia eksport, wykonuje usunięcie), ale nie ogląda
+ * jego treści. Zapewnia to kształt API w @longevity/gdpr — panel dostaje
+ * metadane i potwierdzenie, nie dane zdrowotne.
+ */
+export const AKCJE_ADMINISTRACYJNE = [
+  'zarzadzanie_synchronizacja',
+  'odczyt_logu_synchronizacji',
+  'obsluga_wnioskow_rodo',
+  'wykonanie_retencji',
+  'odczyt_stanu_systemu',
+] as const;
+
+export type AkcjaAdministracyjna = (typeof AKCJE_ADMINISTRACYJNE)[number];
+
+export function czyAkcjaAdministracyjna(action: Action): action is AkcjaAdministracyjna {
+  return (AKCJE_ADMINISTRACYJNE as readonly Action[]).includes(action);
+}
+
 export function can(
   actor: Actor,
   action: Action,
@@ -35,7 +58,16 @@ export function can(
   // Admin globalny obsługuje wyłącznie operacje systemowe. Celowo nie jest
   // wytrychem do danych zdrowotnych — administrator platformy nie ma powodu
   // oglądać Karty Pacjenta i nie może tego zrobić „bo jest adminem".
-  if (hasRole(actor, 'admin') && action === 'zarzadzanie_synchronizacja') return ZGODA;
+  //
+  // Wymóg zasobu `system` nie jest formalnością: bez niego zgoda na operację
+  // administracyjną obowiązywałaby także wtedy, gdy ktoś poda jako zasób
+  // uczestnika — a wtedy pierwsza pomyłka w wywołaniu otwiera dostęp do osoby.
+  if (czyAkcjaAdministracyjna(action)) {
+    if (resource.kind !== 'system') {
+      return ODMOWA('Operacja administracyjna dotyczy systemu, nie zasobu osoby ani organizacji.');
+    }
+    return hasRole(actor, 'admin') ? ZGODA : ODMOWA('Wymagana rola administratora.');
+  }
 
   switch (action) {
     case 'odczyt_wlasnych_danych': {
@@ -102,9 +134,6 @@ export function can(
         ? ZGODA
         : ODMOWA('Wymagana rola HR w tej organizacji.');
     }
-
-    case 'zarzadzanie_synchronizacja':
-      return ODMOWA('Wymagana rola administratora.');
   }
 }
 

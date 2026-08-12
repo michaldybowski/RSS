@@ -16,6 +16,7 @@
  *     nie prowadzi już do człowieka.
  */
 
+import { rekordy } from './etykiety.ts';
 import { terminRetencji } from './retention.ts';
 import type { Rekord, ZbiorPodmiotu } from './types.ts';
 
@@ -145,9 +146,9 @@ export function wykonajUsuniecie(
       pozycje,
       tozsamoscUsunieta: true,
       komunikat:
-        `Usunięto ${usuniete} rekordów oraz dane identyfikacyjne. ` +
+        `Usunięto ${rekordy(usuniete)} oraz dane identyfikacyjne. ` +
         (zZachowaniem.length > 0
-          ? `Zachowano ${zZachowaniem.reduce((t, p) => t + p.liczba, 0)} rekordów, ` +
+          ? `Zachowano ${rekordy(zZachowaniem.reduce((t, p) => t + p.liczba, 0))}, ` +
             'których przechowywania wymaga odrębny przepis — szczegóły w zestawieniu poniżej.'
           : 'Nie zachowano żadnych danych.'),
     },

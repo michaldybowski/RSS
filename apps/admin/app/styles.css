@@ -1,0 +1,226 @@
+:root {
+  --tekst: #16191d;
+  --tekst-slaby: #5c6470;
+  --tlo: #f7f8fa;
+  --karta: #fff;
+  --linia: #e2e5ea;
+  --akcent: #1f5f4e;
+  --akcent-slaby: #e8f2ef;
+  --zielona: #1f7a4d;
+  --zolta: #a8730a;
+  --czerwona: #b3261e;
+  --promien: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--tlo);
+  color: var(--tekst);
+  font: 16px/1.6 "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+
+a { color: var(--akcent); }
+
+.pasek-prototyp {
+  background: #2b2f36;
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 20px;
+  text-align: center;
+}
+
+.uklad { max-width: 760px; margin: 0 auto; padding: 28px 20px 64px; }
+
+header.strona { margin-bottom: 24px; }
+header.strona p { color: var(--tekst-slaby); margin: 6px 0 0; }
+
+h1 { font-size: 26px; margin: 0; }
+h2 { font-size: 19px; margin: 28px 0 10px; }
+h3 { font-size: 16px; margin: 20px 0 8px; }
+
+.karta {
+  background: var(--karta);
+  border: 1px solid var(--linia);
+  border-radius: var(--promien);
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+
+fieldset { border: none; margin: 0 0 22px; padding: 0; }
+legend { font-weight: 600; padding: 0; margin-bottom: 4px; }
+
+.pytanie { margin-bottom: 20px; }
+.pytanie > label.etykieta { display: block; font-weight: 600; margin-bottom: 4px; }
+.pomoc { color: var(--tekst-slaby); font-size: 14px; margin: 0 0 8px; }
+.wymagane { color: var(--czerwona); margin-left: 3px; }
+
+input[type="text"], input[type="number"], input[type="date"], textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--linia);
+  border-radius: 7px;
+  font: inherit;
+  background: #fff;
+}
+input:focus, textarea:focus { outline: 2px solid var(--akcent); outline-offset: 1px; }
+
+.opcje { display: flex; flex-direction: column; gap: 6px; }
+.opcja { display: flex; gap: 9px; align-items: flex-start; font-weight: 400; }
+.opcja input { margin-top: 4px; }
+
+.jednostka { color: var(--tekst-slaby); font-size: 14px; margin-left: 6px; }
+
+button, .przycisk {
+  display: inline-block;
+  background: var(--akcent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 11px 20px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+button.wtorny, .przycisk.wtorny {
+  background: transparent;
+  color: var(--akcent);
+  border: 1px solid var(--linia);
+}
+
+.akcje { display: flex; gap: 10px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
+
+.postep { margin-bottom: 18px; }
+.postep-tor { height: 6px; background: var(--linia); border-radius: 3px; overflow: hidden; }
+.postep-wypelnienie { height: 100%; background: var(--akcent); }
+.postep-opis { font-size: 13px; color: var(--tekst-slaby); margin-top: 6px; }
+
+.blad {
+  background: #fdecea;
+  border-left: 3px solid var(--czerwona);
+  padding: 11px 14px;
+  border-radius: 0 7px 7px 0;
+  margin-bottom: 18px;
+  font-size: 15px;
+}
+
+.wynik-glowny { display: flex; align-items: baseline; gap: 12px; }
+.wynik-liczba { font-size: 48px; font-weight: 700; line-height: 1; }
+.wynik-max { color: var(--tekst-slaby); }
+
+.kategoria { display: inline-block; padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 14px; }
+.kategoria.ZIELONA { background: #e4f3ea; color: var(--zielona); }
+.kategoria.ŻÓŁTA { background: #fdf1dc; color: var(--zolta); }
+.kategoria.CZERWONA { background: #fdecea; color: var(--czerwona); }
+
+.skladowe { display: grid; gap: 12px; margin-top: 8px; }
+.skladowa-naglowek { display: flex; justify-content: space-between; font-size: 15px; }
+.skladowa-tor { height: 8px; background: var(--linia); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+.skladowa-wypelnienie { height: 100%; background: var(--akcent); }
+.skladowa-wklad { font-size: 13px; color: var(--tekst-slaby); margin: 5px 0 0; padding-left: 18px; }
+
+.flaga { border-left: 3px solid var(--linia); padding: 8px 0 8px 13px; margin-bottom: 12px; }
+.flaga.ŻÓŁTA { border-color: var(--zolta); }
+.flaga.CZERWONA { border-color: var(--czerwona); }
+.flaga-kod { font-size: 12px; letter-spacing: .06em; color: var(--tekst-slaby); }
+.flaga p { margin: 2px 0 0; }
+
+.lista-plikow { list-style: none; padding: 0; margin: 0; }
+.lista-plikow li { border-bottom: 1px solid var(--linia); padding: 12px 0; display: flex; justify-content: space-between; gap: 14px; align-items: center; }
+.lista-plikow li:last-child { border-bottom: none; }
+.plik-opis { font-size: 14px; color: var(--tekst-slaby); margin: 2px 0 0; }
+
+.notka { background: var(--akcent-slaby); border-radius: var(--promien); padding: 14px 16px; font-size: 15px; }
+
+table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 15px; }
+th, td { border: 1px solid var(--linia); padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: #f2f4f6; }
+
+ul.zwykla { margin: 8px 0; padding-left: 20px; }
+ul.zwykla li { margin: 4px 0; }
+
+/* Panel HR */
+.uklad { max-width: 940px; }
+.pasek-prototyp { background: #3a3f47; }
+
+nav.glowna { display: flex; gap: 6px; margin-bottom: 22px; flex-wrap: wrap; }
+nav.glowna a {
+  padding: 8px 14px; border-radius: 7px; text-decoration: none;
+  color: var(--tekst); background: var(--karta); border: 1px solid var(--linia);
+  font-size: 15px;
+}
+nav.glowna a.aktywna { background: var(--akcent); color: #fff; border-color: var(--akcent); }
+
+.filtry { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+.filtr { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.filtr select { padding: 8px 10px; border: 1px solid var(--linia); border-radius: 7px; font: inherit; background: #fff; }
+
+.kafle { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.kafel { background: var(--karta); border: 1px solid var(--linia); border-radius: var(--promien); padding: 16px 18px; }
+.kafel-etykieta { font-size: 13px; color: var(--tekst-slaby); }
+.kafel-wartosc { font-size: 26px; font-weight: 700; margin-top: 4px; }
+
+.wstrzymane { background: #fdf1dc; border-left: 3px solid var(--zolta); padding: 14px 16px; border-radius: 0 var(--promien) var(--promien) 0; }
+.wstrzymane h3 { margin: 0 0 6px; font-size: 15px; }
+.wstrzymane p { margin: 0; font-size: 15px; }
+
+.slupek { margin-bottom: 12px; }
+.slupek-naglowek { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 4px; }
+.slupek-tor { height: 10px; background: var(--linia); border-radius: 5px; overflow: hidden; }
+.slupek-wypelnienie { height: 100%; background: var(--akcent); }
+
+.kwota { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mala { font-size: 13px; color: var(--tekst-slaby); }
+.ostrzezenie-linia { border-left: 3px solid var(--zolta); padding: 8px 12px; margin-bottom: 8px; font-size: 14px; background: #fdf1dc; }
+
+/* Panel trenera */
+.lista-obecnosci { list-style: none; padding: 0; margin: 0; }
+.lista-obecnosci li {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--linia);
+}
+.lista-obecnosci li:last-child { border-bottom: none; }
+.osoba { flex: 1; }
+.osoba-etykieta { font-weight: 600; }
+.osoba-kod { font-size: 13px; color: var(--tekst-slaby); font-variant-numeric: tabular-nums; }
+.wybor-obecnosci { display: flex; gap: 6px; }
+.wybor-obecnosci label {
+  padding: 7px 13px; border: 1px solid var(--linia); border-radius: 7px;
+  cursor: pointer; font-size: 14px; background: #fff;
+}
+.wybor-obecnosci input { margin-right: 6px; }
+.znacznik-rezerwa { font-size: 12px; background: #fdf1dc; color: var(--zolta); padding: 2px 8px; border-radius: 999px; }
+.warsztat-wiersz { display: flex; gap: 14px; align-items: baseline; }
+.warsztat-wiersz .data { font-variant-numeric: tabular-nums; color: var(--tekst-slaby); min-width: 140px; }
+.stan { font-size: 13px; padding: 2px 9px; border-radius: 999px; }
+.stan.przed { background: #e8f2ef; color: var(--akcent); }
+.stan.trwa { background: #fdf1dc; color: var(--zolta); }
+.stan.po { background: #eef0f3; color: var(--tekst-slaby); }
+.stan.odwolany { background: #fdecea; color: var(--czerwona); }
+
+/* Panel audytora */
+.kryterium { padding: 14px 0; border-bottom: 1px solid var(--linia); }
+.kryterium:last-child { border-bottom: none; }
+.kryterium-naglowek { display: flex; gap: 10px; align-items: baseline; }
+.kryterium-tresc { font-weight: 600; flex: 1; }
+.kryterium-waga { font-size: 12px; color: var(--tekst-slaby); }
+.esrs { font-size: 11px; background: #eef0f3; color: var(--tekst-slaby); padding: 2px 7px; border-radius: 999px; }
+.oceny { display: flex; gap: 6px; flex-wrap: wrap; margin: 9px 0; }
+.oceny label { padding: 6px 12px; border: 1px solid var(--linia); border-radius: 7px; cursor: pointer; font-size: 14px; background: #fff; }
+.oceny input { margin-right: 5px; }
+.dowod { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--tekst-slaby); }
+.dowod.wymagany { color: var(--czerwona); }
+.poziom { display: inline-block; padding: 5px 14px; border-radius: 999px; font-weight: 700; }
+.poziom.zloty { background: #fbf0d0; color: #8a6a00; }
+.poziom.srebrny { background: #eef0f3; color: #4a5058; }
+.poziom.brazowy { background: #f6e6da; color: #8a5326; }
+.poziom.brak { background: #fdecea; color: var(--czerwona); }
+.domena-wynik { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px dashed var(--linia); font-size: 15px; }
+.domena-wynik:last-child { border-bottom: none; }
+
+/* Panel administratora */
+.powod { color: var(--czerwona); font-size: 14px; }
+.uklad { max-width: 1020px; }
+.pasek-prototyp { background: #2b2f36; }

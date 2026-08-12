@@ -6,7 +6,7 @@
  * od utworzenia dawałoby usuwanie danych osoby, która wciąż jest w programie.
  */
 
-import type { Rekord, RodzajRekordu, Uczestnictwo } from './types.ts';
+import type { Rekord, RodzajRekordu, Uczestnictwo, ZbiorPodmiotu } from './types.ts';
 
 export type PunktOdniesienia =
   | 'od_utworzenia'
@@ -163,4 +163,43 @@ export function wymagalne(
   }
 
   return zadania.sort((a, b) => (a.termin < b.termin ? -1 : 1));
+}
+
+export interface WynikRetencji {
+  zbior: ZbiorPodmiotu;
+  wykonane: readonly ZadanieRetencyjne[];
+}
+
+/**
+ * Wykonanie zadań wymagalnych na dany dzień.
+ *
+ * Agregacja nie jest łagodniejszym usunięciem — surowe próbki znikają tak samo
+ * jak przy `usun`, zostaje po nich rekord dobowy bez zawartości pomiarowej.
+ * Gdyby agregacja zachowywała `dane` oryginału, polityka retencji byłaby
+ * etykietą, a nie działaniem.
+ */
+export function wykonajRetencje(zbior: ZbiorPodmiotu, na: string): WynikRetencji {
+  const zadania = wymagalne(zbior.rekordy, zbior.uczestnictwo, na);
+  const wgRekordu = new Map(zadania.map((zadanie) => [zadanie.rekordId, zadanie]));
+
+  const rekordy: Rekord[] = [];
+
+  for (const rekord of zbior.rekordy) {
+    const zadanie = wgRekordu.get(rekord.id);
+    if (zadanie === undefined) {
+      rekordy.push(rekord);
+      continue;
+    }
+
+    if (zadanie.akcja === 'agreguj_dobowo') {
+      rekordy.push({
+        id: `${rekord.id}-dobowy`,
+        rodzaj: 'wearables_dobowe',
+        utworzono: rekord.utworzono,
+        dane: { zrodlo: rekord.id, zagregowano: na },
+      });
+    }
+  }
+
+  return { zbior: { ...zbior, rekordy }, wykonane: zadania };
 }

@@ -12,12 +12,12 @@
  * połowę biblioteki treści — dlatego jest wymuszona typem, nie komentarzem.
  */
 
+import { fetchAllPages } from './fetch.ts';
 import { RateLimiter, systemClock, type Clock, type RateLimitOptions } from './rateLimit.ts';
 import { mappingFor, type DataSourceIds, type SourceMapping } from './sources.ts';
 import { hashRecord, type CacheStore } from './store.ts';
 import type {
   CachedRecord,
-  NotionPage,
   NotionReader,
   SourceCode,
   SourceReport,
@@ -170,49 +170,6 @@ async function syncSource({
     report: { source: mapping.code, fetched: pages.length, created, updated, unchanged, archived, rejected },
     entries,
   };
-}
-
-interface FetchInput {
-  reader: NotionReader;
-  limiter: RateLimiter;
-  dataSourceId: string;
-  editedSince?: string;
-  maxPages: number;
-}
-
-async function fetchAllPages({
-  reader,
-  limiter,
-  dataSourceId,
-  editedSince,
-  maxPages,
-}: FetchInput): Promise<readonly NotionPage[]> {
-  const pages: NotionPage[] = [];
-  let cursor: string | null = null;
-  let requests = 0;
-
-  do {
-    if (requests >= maxPages) {
-      throw new Error(
-        `Przekroczono limit ${maxPages} stron paginacji dla źródła ${dataSourceId}. ` +
-          'Przerwano, żeby nie zapętlić importu.',
-      );
-    }
-
-    const result = await limiter.run(() =>
-      reader.queryDataSource({
-        dataSourceId,
-        ...(editedSince !== undefined ? { editedSince } : {}),
-        ...(cursor !== null ? { cursor } : {}),
-      }),
-    );
-
-    pages.push(...result.pages);
-    cursor = result.nextCursor;
-    requests += 1;
-  } while (cursor !== null);
-
-  return pages;
 }
 
 function logEntry(
