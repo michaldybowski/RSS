@@ -4,9 +4,14 @@ Platforma programu Długowieczności (HCPL / FDP).
 
 ## Stan
 
-**Faza A — w toku.** Gotowy deterministyczny rdzeń: wyliczenia, czerwone flagi,
-Health Score, klasyfikacja ryzyka oraz warstwa minimalizacji danych wysyłanych
-do modelu językowego.
+**Faza A — zamknięta.** Silnik reguł, minimalizacja danych, kwestionariusz,
+model zgód, synchronizator Notion, pipeline planu, generowanie dokumentów
+i panel uczestnika.
+
+**Faza B — w toku.** Gotowe: autoryzacja w kontekście organizacji, agregacja
+dashboardu HR z progiem k-anonimowości, rozliczenia A/B/C/G/M, prawa osoby
+i retencja, panel HR. Zostaje: panele trenera, audytora i admina, wyzwania
+i gamifikacja, biblioteka i Akademia, warsztaty i obecności, audyt Zdrowe Biuro.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -26,6 +31,10 @@ npm run panel:build && npm start --workspace @longevity/panel
 
 # Przejście przez panel jak użytkownik (panel musi działać)
 CHROMIUM_PATH=/ścieżka/do/chrome npm run panel:e2e -- --url http://127.0.0.1:3000
+
+# Panel HR
+npm run hr:build && npm start --workspace @longevity/hr
+CHROMIUM_PATH=/ścieżka/do/chrome npm run hr:e2e -- --url http://127.0.0.1:3001
 ```
 
 Wymagany Node 22+. PDF powstaje przez Chromium w trybie bezgłowym; bez
@@ -37,6 +46,11 @@ procesu jako użytkownik bez uprawnień roota.
 ## Struktura
 
 ```
+apps/hr/                     panel HR — agregaty i rozliczenia
+  app/dashboard/             metryki z filtrami i jawnym wstrzymaniem wyniku
+  app/rozliczenia/           dokumenty wg linii finansowania
+  app/dziennik/              dziennik dostępu z zapisem filtrów
+  lib/zapytania.ts           jedyne wejście do danych: autoryzacja + audit log
 apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
   app/                       krok 0, kwestionariusz, podsumowanie, wynik
   app/dokumenty/[format]/    pobieranie HTML, PDF, DOCX, iCal
@@ -76,6 +90,21 @@ packages/plan/               pipeline generowania planu (specyfikacja 8)
   src/guardrails.ts          bariery merytoryczne + informacja zwrotna
   src/referrals.ts           zlecenie badań i pytania do lekarza z reguł
   src/pipeline.ts            orkiestracja, ponowienia, kolejka ręczna
+packages/access/             autoryzacja w kontekście organizacji (4.1)
+  src/authorize.ts           domyślna odmowa; każde "wolno" z jawnej reguły
+packages/analytics/          agregacja dashboardu HR (specyfikacja 10)
+  src/anonymity.ts           próg k, reguła dopełnienia, zaokrąglanie
+  src/dashboard.ts           metryki z kontrolą progu
+  src/audit.ts               rejestr wejść, wykrywanie serii zawężających
+packages/billing/            rozliczenia A/B/C/G/M (specyfikacja 13)
+  src/money.ts               arytmetyka na groszach, VAT bez ułamków dziesiętnych
+  src/zfss.ts                progi dopłat per organizacja
+  src/run.ts                 przebieg: obciążenia -> dokumenty
+packages/gdpr/               prawa osoby i retencja (12.3-12.4)
+  src/audit.ts               log tylko do dopisywania, po pseudonimie
+  src/retention.ts           trzy punkty odniesienia, sweeper zadań
+  src/export.ts              pakiet art. 15 i 20
+  src/erasure.ts             usunięcie w trzech kategoriach + potwierdzenie
 packages/notion-sync/        synchronizacja Notion -> cache (ADR-02)
   src/types.ts               kontrakt czytnika: jedna metoda, tylko odczyt
   src/sources.ts             mapowanie 6 baz Notion na rekordy cache
@@ -115,6 +144,14 @@ Trzy rzeczy są wymuszone technicznie, nie regulaminowo:
 8. **Trzy nieudane próby to kolejka ręczna, nie plan byle jaki.** Zlecenie badań
    i pytania do lekarza powstają z reguł, więc specjalista dostaje komplet
    materiału nawet wtedy, gdy model zawiódł.
+9. **HR nie dosięgnie danych pojedynczej osoby** — także we własnej organizacji.
+   Imienna lista uczestników nie jest dostępna dla żadnej roli, a administrator
+   nie jest wytrychem do danych zdrowotnych.
+10. **Agregat chroni też dopełnieniem.** Filtr obejmujący 11 z 12 osób jest
+    blokowany, bo dwunastą osobę da się wtedy wskazać przez różnicę.
+11. **Usunięcie danych nie kasuje audit logu ani dokumentów księgowych.**
+    Rozdział pseudonimu od tożsamości sprawia, że jedno nie wyklucza drugiego;
+    potwierdzenie mówi osobie wprost, co zostało i na jakiej podstawie.
 
 ## Dokumenty
 

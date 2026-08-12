@@ -15,7 +15,9 @@
     "demo": "node --import tsx scripts/demo.ts",
     "panel": "npm run dev --workspace @longevity/panel",
     "panel:build": "npm run build --workspace @longevity/panel",
-    "panel:e2e": "node --import tsx apps/panel/e2e/przejscie.mts"
+    "panel:e2e": "node --import tsx apps/panel/e2e/przejscie.mts",
+    "hr:build": "npm run build --workspace @longevity/hr",
+    "hr:e2e": "node --import tsx apps/hr/e2e/przejscie.mts"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
