@@ -2,7 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { AccessDeniedError, assertCan, can, hasRole } from '../src/authorize.ts';
-import type { Actor, Resource } from '../src/types.ts';
+import type { Action, Actor, Resource } from '../src/types.ts';
 
 const FIRMA_X = 'org-x';
 const FIRMA_Y = 'org-y';
@@ -59,10 +59,21 @@ describe('dane uczestnika', () => {
     assert.equal(can(hr(FIRMA_X), 'odczyt_wlasnych_danych', osoba('u-1')).allowed, false);
   });
 
-  test('imienna lista uczestników nie jest dostępna dla nikogo', () => {
+  test('imienna lista uczestników programu nie jest dostępna dla nikogo', () => {
     for (const actor of [hr(FIRMA_X), admin, lekarz(FIRMA_X), trener('t-1', FIRMA_X)]) {
       assert.equal(can(actor, 'odczyt_listy_uczestnikow', firma(FIRMA_X)).allowed, false);
     }
+  });
+
+  test('lista zapisanych na warsztat jest wyjątkiem ograniczonym do prowadzącego', () => {
+    // Jedyna lista imienna w systemie. Wąska: jeden warsztat, jeden trener.
+    const swoj: Resource = { kind: 'warsztat', organizationId: FIRMA_X, trainerId: 't-1' };
+    const cudzy: Resource = { kind: 'warsztat', organizationId: FIRMA_X, trainerId: 't-2' };
+
+    assert.equal(can(trener('t-1', FIRMA_X), 'odczyt_listy_zapisanych', swoj).allowed, true);
+    assert.equal(can(trener('t-1', FIRMA_X), 'odczyt_listy_zapisanych', cudzy).allowed, false);
+    assert.equal(can(hr(FIRMA_X), 'odczyt_listy_zapisanych', swoj).allowed, false);
+    assert.equal(can(admin, 'odczyt_listy_zapisanych', swoj).allowed, false);
   });
 });
 
@@ -121,22 +132,32 @@ describe('administrator', () => {
   });
 });
 
-describe('domyślna odmowa', () => {
-  test('aktor bez ról nie może nic', () => {
-    const nikt: Actor = { userId: 'n', grants: [] };
-    const akcje = [
-      'odczyt_wlasnych_danych',
-      'odczyt_dashboardu',
-      'odczyt_karty_pacjenta',
-      'odczyt_listy_uczestnikow',
-      'zapis_obecnosci',
-      'zapis_audytu',
-      'odczyt_rozliczen',
-      'zarzadzanie_synchronizacja',
-    ] as const;
+/**
+ * Wyliczenie wszystkich operacji, wymuszone przez typ.
+ *
+ * `Record<Action, true>` na literale obiektu sprawia, że dopisanie operacji
+ * bez uzupełnienia tej listy jest błędem kompilacji — a nie cichym zwężeniem
+ * pokrycia testu domyślnej odmowy.
+ */
+const WSZYSTKIE_AKCJE: Record<Action, true> = {
+  odczyt_wlasnych_danych: true,
+  odczyt_dashboardu: true,
+  odczyt_karty_pacjenta: true,
+  odczyt_listy_uczestnikow: true,
+  odczyt_listy_zapisanych: true,
+  zapis_obecnosci: true,
+  zapis_audytu: true,
+  odczyt_rozliczen: true,
+  zarzadzanie_synchronizacja: true,
+};
 
-    for (const akcja of akcje) {
+describe('domyślna odmowa', () => {
+  test('aktor bez ról nie może nic — dla każdej zdefiniowanej operacji', () => {
+    const nikt: Actor = { userId: 'n', grants: [] };
+
+    for (const akcja of Object.keys(WSZYSTKIE_AKCJE) as Action[]) {
       assert.equal(can(nikt, akcja, firma(FIRMA_X)).allowed, false, akcja);
+      assert.equal(can(nikt, akcja, { kind: 'system' }).allowed, false, `${akcja} / system`);
     }
   });
 

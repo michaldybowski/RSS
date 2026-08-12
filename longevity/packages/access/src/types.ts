@@ -13,6 +13,7 @@ export type Action =
   | 'odczyt_dashboardu'
   | 'odczyt_karty_pacjenta'
   | 'odczyt_listy_uczestnikow'
+  | 'odczyt_listy_zapisanych'
   | 'zapis_obecnosci'
   | 'zapis_audytu'
   | 'odczyt_rozliczen'

@@ -10,8 +10,9 @@ i panel uczestnika.
 
 **Faza B — w toku.** Gotowe: autoryzacja w kontekście organizacji, agregacja
 dashboardu HR z progiem k-anonimowości, rozliczenia A/B/C/G/M, prawa osoby
-i retencja, panel HR. Zostaje: panele trenera, audytora i admina, wyzwania
-i gamifikacja, biblioteka i Akademia, warsztaty i obecności, audyt Zdrowe Biuro.
+i retencja, panel HR, warsztaty i obecności. Zostaje: panele trenera, audytora
+i admina, wyzwania
+i gamifikacja, biblioteka i Akademia, audyt Zdrowe Biuro.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -105,6 +106,10 @@ packages/gdpr/               prawa osoby i retencja (12.3-12.4)
   src/retention.ts           trzy punkty odniesienia, sweeper zadań
   src/export.ts              pakiet art. 15 i 20
   src/erasure.ts             usunięcie w trzech kategoriach + potwierdzenie
+packages/workshops/          warsztaty on-site
+  src/enrollment.ts          zapisy, lista rezerwowa, awans po zwolnieniu
+  src/attendance.ts          obecności, lista dla trenera, frekwencja
+  src/settlement.ts          rozliczenie trenera
 packages/notion-sync/        synchronizacja Notion -> cache (ADR-02)
   src/types.ts               kontrakt czytnika: jedna metoda, tylko odczyt
   src/sources.ts             mapowanie 6 baz Notion na rekordy cache
@@ -152,6 +157,10 @@ Trzy rzeczy są wymuszone technicznie, nie regulaminowo:
 11. **Usunięcie danych nie kasuje audit logu ani dokumentów księgowych.**
     Rozdział pseudonimu od tożsamości sprawia, że jedno nie wyklucza drugiego;
     potwierdzenie mówi osobie wprost, co zostało i na jakiej podstawie.
+12. **Obecności nie da się odnotować przed rozpoczęciem warsztatu.** Lista
+    wypełniona z góry nie jest listą obecności, tylko listą zapisów.
+13. **Jedyna imienna lista w systemie** to lista zapisanych na jeden warsztat,
+    widoczna dla jednego trenera — i pokazuje imię z inicjałem, nie pełne dane.
 
 ## Dokumenty
 

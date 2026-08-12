@@ -70,6 +70,16 @@ export function can(
       return ODMOWA('Imienna lista uczestników nie jest udostępniana żadnej roli.');
     }
 
+    case 'odczyt_listy_zapisanych': {
+      // Jedyna lista imienna w systemie. Ograniczona do jednego warsztatu
+      // i do trenera, który go prowadzi — nie do „trenerów w ogóle".
+      if (resource.kind !== 'warsztat') return ODMOWA('Zasób nie jest warsztatem.');
+      if (!hasRole(actor, 'trener', org)) return ODMOWA('Wymagana rola trenera w tej organizacji.');
+      return resource.trainerId === actor.userId
+        ? ZGODA
+        : ODMOWA('Listę zapisanych widzi wyłącznie trener prowadzący.');
+    }
+
     case 'zapis_obecnosci': {
       if (resource.kind !== 'warsztat') return ODMOWA('Zasób nie jest warsztatem.');
       if (!hasRole(actor, 'trener', org)) return ODMOWA('Wymagana rola trenera w tej organizacji.');
