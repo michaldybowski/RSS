@@ -1,0 +1,11 @@
+{
+  "name": "@longevity/gdpr",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Prawa osoby, retencja i audit log (specyfikacja 12.3-12.4)",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
