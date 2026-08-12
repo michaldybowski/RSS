@@ -19,7 +19,9 @@
     "hr:build": "npm run build --workspace @longevity/hr",
     "hr:e2e": "node --import tsx apps/hr/e2e/przejscie.mts",
     "trener:build": "npm run build --workspace @longevity/trener",
-    "trener:e2e": "node --import tsx apps/trener/e2e/przejscie.mts"
+    "trener:e2e": "node --import tsx apps/trener/e2e/przejscie.mts",
+    "audytor:build": "npm run build --workspace @longevity/audytor",
+    "audytor:e2e": "node --import tsx apps/audytor/e2e/przejscie.mts"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

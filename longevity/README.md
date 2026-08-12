@@ -10,9 +10,9 @@ i panel uczestnika.
 
 **Faza B — w toku.** Gotowe: autoryzacja w kontekście organizacji, agregacja
 dashboardu HR z progiem k-anonimowości, rozliczenia A/B/C/G/M, prawa osoby
-i retencja, panel HR, warsztaty i obecności, panel trenera. Zostaje: panel
-audytora i admina, wyzwania i gamifikacja, biblioteka i Akademia, audyt
-Zdrowe Biuro.
+i retencja, panel HR, warsztaty i obecności, panel trenera, audyt Zdrowe Biuro
+z certyfikacją i panel audytora. Zostaje: panel admina, wyzwania i gamifikacja,
+biblioteka i Akademia.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -40,6 +40,10 @@ CHROMIUM_PATH=/ścieżka/do/chrome npm run hr:e2e -- --url http://127.0.0.1:3001
 # Panel trenera
 npm run trener:build && npm start --workspace @longevity/trener
 CHROMIUM_PATH=/ścieżka/do/chrome npm run trener:e2e -- --url http://127.0.0.1:3002
+
+# Panel audytora (przebieg e2e jest jednorazowy — serwer na świeżo)
+npm run audytor:build && npm start --workspace @longevity/audytor
+CHROMIUM_PATH=/ścieżka/do/chrome npm run audytor:e2e -- --url http://127.0.0.1:3003
 ```
 
 Wymagany Node 22+. PDF powstaje przez Chromium w trybie bezgłowym; bez
@@ -60,6 +64,9 @@ apps/trener/                 panel trenera — warsztaty i obecności
   app/warsztaty/             lista własnych warsztatów ze stanem i frekwencją
   app/warsztaty/[id]/        lista obecności; blokada przed rozpoczęciem
   app/rozliczenie/           pozycje wstrzymane bez listy obecności
+apps/audytor/                panel audytora — Zdrowe Biuro i certyfikacja
+  app/audyty/[id]/           arkusz kryteriów z wynikiem i listą braków
+  app/rejestr/               publiczna weryfikacja numeru certyfikatu
 apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
   app/                       krok 0, kwestionariusz, podsumowanie, wynik
   app/dokumenty/[format]/    pobieranie HTML, PDF, DOCX, iCal
@@ -118,6 +125,9 @@ packages/workshops/          warsztaty on-site
   src/enrollment.ts          zapisy, lista rezerwowa, awans po zwolnieniu
   src/attendance.ts          obecności, lista dla trenera, frekwencja
   src/settlement.ts          rozliczenie trenera
+packages/audit/              audyt i certyfikacja (specyfikacja 11)
+  src/scoring.ts             wagi, "nie dotyczy" poza mianownikiem, ESRS S1
+  src/workflow.ts            warunki zamknięcia, wydanie i weryfikacja
 packages/notion-sync/        synchronizacja Notion -> cache (ADR-02)
   src/types.ts               kontrakt czytnika: jedna metoda, tylko odczyt
   src/sources.ts             mapowanie 6 baz Notion na rekordy cache
@@ -169,6 +179,9 @@ Wymuszone technicznie, nie regulaminowo:
     wypełniona z góry nie jest listą obecności, tylko listą zapisów.
 13. **Jedyna imienna lista w systemie** to lista zapisanych na jeden warsztat,
     widoczna dla jednego trenera — i pokazuje imię z inicjałem, nie pełne dane.
+14. **Certyfikatu nie da się wydać na skróty.** Audyt zamyka się dopiero po
+    ocenieniu wszystkich kryteriów i załączeniu dowodów tam, gdzie standard ich
+    wymaga; certyfikat powstaje wyłącznie z zamkniętego audytu powyżej progu.
 
 ## Dokumenty
 
