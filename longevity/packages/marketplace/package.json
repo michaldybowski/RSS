@@ -1,0 +1,16 @@
+{
+  "name": "@longevity/marketplace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Marketplace partnerów i prowizje — linia M (specyfikacja 13)",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@longevity/billing": "*",
+    "@longevity/core": "*",
+    "@longevity/model-payload": "*"
+  }
+}

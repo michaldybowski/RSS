@@ -193,6 +193,17 @@ export default async function Wynik() {
         </a>
       </div>
 
+      <div className="karta">
+        <h2 style={{ marginTop: 0 }}>Marketplace</h2>
+        <p style={{ marginTop: 0 }}>
+          Oferty partnerów programu. Katalog nie jest dobierany na podstawie Twoich
+          wyników, a przy każdej ofercie widzisz wysokość prowizji programu.
+        </p>
+        <a className="przycisk" href="/marketplace">
+          Otwórz marketplace
+        </a>
+      </div>
+
       <form action={startOver}>
         <div className="akcje">
           <button type="submit" className="wtorny">

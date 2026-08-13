@@ -39,6 +39,7 @@ export const AKCJE_ADMINISTRACYJNE = [
   'obsluga_wnioskow_rodo',
   'wykonanie_retencji',
   'odczyt_stanu_systemu',
+  'odczyt_rozliczen_prowizji',
 ] as const;
 
 export type AkcjaAdministracyjna = (typeof AKCJE_ADMINISTRACYJNE)[number];

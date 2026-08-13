@@ -189,8 +189,23 @@ try {
   sprawdz(stan.includes('Bluehost'), 'decyzja o hostingu jest wypisana jako warunek');
   await zrzut(page, '06-stan');
 
+  // --- prowizje marketplace -------------------------------------------------
+  await page.goto(`${baseUrl}/prowizje`);
+  await page.waitForSelector('h1:has-text("Prowizje")', { timeout: 30_000 });
+  const prowizje = await page.locator('body').innerText();
+
+  sprawdz(prowizje.includes('Laboratorium Alfa'), 'faktura prowizyjna dla partnera');
+  sprawdz(prowizje.includes('48,00 zł'), 'prowizja policzona z zamówień zrealizowanych');
+  sprawdz(prowizje.includes('pominięto 2'), 'zamówienia niezrealizowane są pominięte i policzone');
+  sprawdz(
+    !prowizje.includes('Suplementy Gamma'),
+    'partner bez zamówień nie dostaje faktury na zero',
+  );
+  sprawdz(!/psd-/u.test(prowizje), 'faktura nie zawiera pseudonimów uczestników');
+  await zrzut(page, '07-prowizje');
+
   // --- asercje negatywne na wszystkich stronach -----------------------------
-  for (const sciezka of ['/synchronizacja', '/rodo', '/retencja', '/stan']) {
+  for (const sciezka of ['/synchronizacja', '/rodo', '/retencja', '/prowizje', '/stan']) {
     await page.goto(baseUrl + sciezka);
     await page.waitForSelector('h1', { timeout: 30_000 });
     const tresc = await page.content();

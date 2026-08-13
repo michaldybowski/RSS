@@ -38,7 +38,9 @@ import {
   type SyncReport,
 } from '@longevity/notion-sync';
 
-import { DZIS, TERAZ } from './dane.ts';
+import { rozliczOkres } from '@longevity/marketplace';
+
+import { DZIS, PARTNERZY, TERAZ, VAT_PROWIZJI, ZAMOWIENIA } from './dane.ts';
 import {
   AUDIT,
   dodajPakiet,
@@ -247,6 +249,18 @@ export function stanSystemu(actor: Actor): StanSystemu {
     progK: PROG_K,
     zrodlaKrytyczne: ZRODLA_KRYTYCZNE,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Prowizje marketplace
+// ---------------------------------------------------------------------------
+
+export function prowizje(actor: Actor, okres: string) {
+  assertCan(actor, 'odczyt_rozliczen_prowizji', SYSTEM);
+
+  // Partnerzy w negocjacjach nie mają zamówień, ale gdyby mieli, faktura
+  // i tak by nie powstała: `rozliczOkres` pomija puste zestawienia.
+  return rozliczOkres(PARTNERZY, ZAMOWIENIA, { okres, stawkaVat: VAT_PROWIZJI });
 }
 
 // ---------------------------------------------------------------------------

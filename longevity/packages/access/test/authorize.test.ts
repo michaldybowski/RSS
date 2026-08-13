@@ -191,6 +191,7 @@ const WSZYSTKIE_AKCJE: Record<Action, true> = {
   obsluga_wnioskow_rodo: true,
   wykonanie_retencji: true,
   odczyt_stanu_systemu: true,
+  odczyt_rozliczen_prowizji: true,
 };
 
 describe('domyślna odmowa', () => {

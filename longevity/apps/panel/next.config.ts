@@ -13,6 +13,9 @@ const config: NextConfig = {
     '@longevity/questionnaire',
     '@longevity/plan',
     '@longevity/documents',
+    '@longevity/marketplace',
+    '@longevity/billing',
+    '@longevity/model-payload',
   ],
   typescript: { ignoreBuildErrors: false },
 };
