@@ -319,12 +319,13 @@ Wymuszone technicznie, nie regulaminowo:
 | Dokument | Status |
 |---|---|
 | [01 — Specyfikacja techniczna](docs/01-specyfikacja-techniczna.md) | wersja 0.2 — decyzje 2–8 podjęte |
+| [02 — Uruchomienie testowe na CloudFerro](docs/02-uruchomienie-testowe.md) | maszyna, usługi, nginx, warunki przed pilotażem |
 
 ## Rejestr decyzji
 
 | # | Decyzja | Rozstrzygnięcie |
 |---|---|---|
-| 1 | Wariant hostingu produkcyjnego | odroczona do prototypu |
+| 1 | Wariant hostingu produkcyjnego | CloudFerro (PL) — wariant W2, patrz dokument 02 |
 | 2 | Zapis zwrotny do Notion | nie — synchronizacja jednokierunkowa |
 | 3 | Dane do modelu językowego | pseudonimizacja i redukcja |
 | 4 | Stawka VAT | parametr cennika w Notion |
