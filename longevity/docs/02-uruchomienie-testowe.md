@@ -52,7 +52,7 @@ git clone --branch longevity-only --single-branch \
 cd ~/longevity
 
 npm ci
-npm run check          # 630 testów + typecheck — musi przejść przed startem
+npm run check          # 632 testy + typecheck — musi przejść przed startem
 
 for a in panel hr trener audytor admin api lekarz; do
   npm run build --workspace @longevity/$a
@@ -202,7 +202,7 @@ Na maszynie, po uruchomieniu usług:
 
 ```bash
 cd ~/longevity
-npm run check                                   # 630 testów, typecheck
+npm run check                                   # 632 testy, typecheck
 
 # każdy przebieg jest jednorazowy — usługę restartujemy przed sprawdzeniem
 sudo systemctl restart longevity@panel
@@ -211,4 +211,19 @@ CHROMIUM_PATH=/usr/bin/chromium-browser CHROMIUM_NO_SANDBOX=0 \
 ```
 
 Analogicznie `hr:e2e`, `trener:e2e`, `audytor:e2e`, `admin:e2e`,
-`lekarz:e2e` oraz `api:kontrakt` — razem 286 sprawdzeń.
+`lekarz:e2e` oraz `api:kontrakt` — razem **339 sprawdzeń**:
+
+| Przebieg | Sprawdzeń | Port |
+|---|---|---|
+| `panel:e2e` | 74 | 3000 |
+| `hr:e2e` | 16 | 3001 |
+| `trener:e2e` | 19 | 3002 |
+| `audytor:e2e` | 19 | 3003 |
+| `admin:e2e` | 75 | 3004 |
+| `api:kontrakt` | 113 | 3005 |
+| `lekarz:e2e` | 23 | 3006 |
+
+`CHROMIUM_PATH` musi wskazywać **plik wykonywalny**, nie katalog —
+na Ubuntu 24.04 z pakietu `chromium-browser` jest to `/usr/bin/chromium-browser`.
+Przebiegi e2e uruchamiamy jako użytkownik `longevity`, nie jako root; wtedy
+`CHROMIUM_NO_SANDBOX` zostaje wyłączone i piaskownica przeglądarki działa.

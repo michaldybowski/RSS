@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   czyNieprzypisywalny,
   doFormatuPrzenoszalnego,
+  OPIS_AKCJI,
   OPIS_RODZAJU,
   opisRodzaju,
   PamieciowyAuditLog,
@@ -106,6 +107,19 @@ describe('audit log', () => {
     assert.equal(wymagaLogu('przekazanie_do_modelu'), true);
     assert.equal(wymagaLogu('synchronizacja_tresci'), true);
     assert.equal(wymagaLogu('logowanie'), false);
+  });
+
+  test('konsultacje i zamówienia zostawiają ślad widoczny dla uczestnika', () => {
+    assert.equal(wymagaLogu('rezerwacja_konsultacji'), true);
+    assert.equal(wymagaLogu('odwolanie_konsultacji'), true);
+    assert.equal(wymagaLogu('zamowienie_marketplace'), true);
+  });
+
+  test('każda akcja ma nazwę dla człowieka, a nie kod z bazy', () => {
+    for (const [kod, opis] of Object.entries(OPIS_AKCJI)) {
+      assert.notEqual(opis, kod);
+      assert.ok(!opis.includes('_'), `opis akcji ${kod} wygląda jak identyfikator`);
+    }
   });
 
   test('identyfikatory są kolejne i przewidywalne', () => {

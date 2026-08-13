@@ -17,8 +17,10 @@ oraz biblioteka i Akademia. **Faza B zamknięta.**
 **Faza C — w toku.** Gotowe: API v1 (ADR-05 — jeden backend dla portalu
 i aplikacji mobilnej), moduł medyczny (terminarz konsultacji, Karta Pacjenta
 za zgodą, zlecenia badań, panel lekarza) oraz marketplace partnerów
-z rozliczeniem prowizji. Zostaje: aplikacja Expo z HealthKit i Health Connect,
-powiadomienia push, moduł PRIME.
+z rozliczeniem prowizji. API obejmuje wszystkie trzy moduły — konsultacje,
+marketplace i Akademię — więc klient mobilny ma z czym się połączyć.
+Zostaje: aplikacja Expo z HealthKit i Health Connect, powiadomienia push,
+moduł PRIME.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -93,6 +95,10 @@ apps/api/                    API v1 — jeden backend dla portalu i mobile (ADR-
   app/api/v1/health-score/   ocena za bramką zgody, z wpisem w audit logu
   app/api/v1/challenges/     katalog z powodem odmowy, zapis walidowany serwerowo
   app/api/v1/wearables/      wsad z telefonu, próbka po próbce
+  app/api/v1/library/        biblioteka i zaliczanie materiałów (deklaracja/quiz)
+  app/api/v1/academy/        ścieżki Akademii z postępem liczonym serwerowo
+  app/api/v1/consultations/  terminarz, rezerwacja i odwołanie bez opłaty
+  app/api/v1/marketplace/    katalog ofert i zamówienia z ładunkiem partnera
   app/api/v1/org/[id]/       dashboard bez parametru identyfikującego osobę
   app/api/v1/clinician/      Karta Pacjenta — rola, zgoda i log
   lib/odpowiedzi.ts          kontrakt błędu i mapowanie wyjątków na kody HTTP
@@ -313,6 +319,19 @@ Wymuszone technicznie, nie regulaminowo:
     pracodawcę i nic z oceny zdrowia — ładunek przechodzi przez ten sam skaner
     nazw pól, co ładunek dla modelu językowego. Faktura prowizyjna nie zawiera
     nawet pseudonimów i obejmuje wyłącznie zamówienia zrealizowane.
+33. **API pokrywa te same reguły co panele.** Konsultacje, marketplace
+    i Akademia mają punkty końcowe, bo klient mobilny ma być drugim klientem
+    tego samego backendu, a nie osobną aplikacją z własnymi regułami. Zamówienie
+    z pominięciem katalogu, zaliczenie materiału wycofanego i rezerwacja terminu
+    pilnego bez podstawy dostają odmowę po stronie serwera.
+34. **Wycofanie zgody nie odcina od lekarza.** Bez zgody na dane zdrowotne pula
+    pilna zostaje zamknięta — bo nie mamy z czego ocenić kategorii ryzyka —
+    ale terminy planowe pozostają dostępne, a odpowiedź mówi wprost, czego nie
+    policzyliśmy. Kara za skorzystanie z prawa byłaby zaprzeczeniem tego prawa.
+35. **Konflikt stanu ma własny kod.** Zajęty termin i powtórzone zamówienie to
+    409, a nie 400: klient mobilny musi odróżnić „odśwież listę" od „popraw
+    żądanie". Rejestr dostępu podaje przy każdym zdarzeniu kod i zdanie po
+    polsku, żeby żaden klient nie budował własnego słownika.
 
 ## Dokumenty
 

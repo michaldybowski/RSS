@@ -39,8 +39,15 @@ const BLOKADY_PRZED_PRODUKCJA: readonly { tytul: string; opis: string }[] = [
     opis: 'Współadministrowanie (art. 26) czy powierzenie (art. 28). Od tego zależy treść umów.',
   },
   {
-    tytul: 'Decyzja o hostingu',
-    opis: 'Dane klasy K1 wymagają serwera w UE. Bluehost nie spełnia tego warunku.',
+    // Decyzja 1 jest rozstrzygnięta (CloudFerro), ale warunek nie znika razem
+    // z nią: przed wejściem prawdziwych danych trzeba jeszcze umowy powierzenia.
+    // Wykreślenie tej pozycji po wyborze dostawcy zamieniłoby listę warunków
+    // w listę zakupów.
+    tytul: 'Umowa powierzenia z dostawcą hostingu',
+    opis:
+      'Hosting: CloudFerro (Polska) — decyzja 1 rozstrzygnięta. Dane klasy K1 ' +
+      'wymagają jeszcze umowy powierzenia przetwarzania (art. 28 RODO) ' +
+      'i szyfrowanego wolumenu z odtworzeniem kopii przetestowanym raz.',
   },
 ];
 

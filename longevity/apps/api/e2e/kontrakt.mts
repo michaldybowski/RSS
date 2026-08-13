@@ -228,6 +228,231 @@ sprawdz(
   'filtr po filarze działa po stronie serwera',
 );
 
+// --- Akademia ----------------------------------------------------------------
+
+const sciezkiPrzed = await zapytaj('/api/v1/academy/paths', { token: UCZESTNIK });
+sprawdz(sciezkiPrzed.status === 200, 'ścieżki Akademii wydane');
+sprawdz(
+  !sciezkiPrzed.cialo.sciezki.some((s: any) => s.id === 's-prime'),
+  'ścieżka spoza pakietu niewidoczna',
+);
+
+const podstawy = sciezkiPrzed.cialo.sciezki.find((s: any) => s.id === 's-podstawy');
+sprawdz(podstawy?.wymaganych === 2, 'moduł z materiałem wycofanym nie wchodzi do wymagań');
+sprawdz(podstawy?.pominietych === 1, 'pominięty moduł jest policzony, a nie ukryty');
+sprawdz(
+  podstawy?.moduly.some((m: any) => m.stan === 'niedostepny' && m.tytul !== 'm-stary'),
+  'moduł niedostępny ma tytuł, a nie identyfikator z bazy',
+);
+sprawdz(
+  podstawy?.moduly.find((m: any) => m.materialId === 'm-ruch-02')?.stan === 'zablokowany',
+  'kolejny moduł jest zamknięty do czasu zaliczenia poprzedniego',
+);
+
+const deklaracjaNaQuizie = await zapytaj('/api/v1/library/m-sen-01/complete', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+});
+sprawdz(
+  deklaracjaNaQuizie.status === 400,
+  'materiału ze sprawdzianem nie zalicza deklaracja uczestnika',
+);
+
+const quizOblany = await zapytaj('/api/v1/library/m-sen-01/complete', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { odpowiedzi: { 'p-1': 1, 'p-2': 0 } },
+});
+sprawdz(quizOblany.status === 422, 'niezaliczony sprawdzian nie zalicza materiału');
+
+const quizZdany = await zapytaj('/api/v1/library/m-sen-01/complete', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { odpowiedzi: { 'p-1': 0, 'p-2': 1 } },
+});
+sprawdz(quizZdany.status === 200 && quizZdany.cialo.sposob === 'quiz', 'sprawdzian zaliczony');
+sprawdz(
+  quizZdany.cialo.wynik.pytania.every((p: any) => typeof p.wyjasnienie === 'string'),
+  'wynik sprawdzianu niesie wyjaśnienia, nie samą liczbę',
+);
+
+const wycofany = await zapytaj('/api/v1/library/m-stary/complete', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+});
+sprawdz(wycofany.status === 404, 'materiału wycofanego nie da się zaliczyć');
+
+const pozaPakietem = await zapytaj('/api/v1/library/m-prime-01/complete', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+});
+sprawdz(pozaPakietem.status === 404, 'materiału spoza pakietu nie da się zaliczyć');
+
+await zapytaj('/api/v1/library/m-ruch-02/complete', { token: UCZESTNIK, metoda: 'POST' });
+
+const sciezkiPo = await zapytaj('/api/v1/academy/paths', { token: UCZESTNIK });
+const podstawyPo = sciezkiPo.cialo.sciezki.find((s: any) => s.id === 's-podstawy');
+sprawdz(podstawyPo?.procent === 100, 'ścieżka domyka się mimo wycofanego modułu');
+sprawdz(podstawyPo?.ukonczona === true, 'ukończenie liczy się z modułów obowiązkowych');
+sprawdz(
+  podstawyPo?.moduly.find((m: any) => m.materialId === 'm-sen-01')?.sposobZaliczenia === 'quiz',
+  'zaliczenie mówi, skąd się wzięło',
+);
+
+// --- konsultacje -------------------------------------------------------------
+
+const terminarz = await zapytaj('/api/v1/consultations', { token: UCZESTNIK });
+sprawdz(terminarz.status === 200, 'terminarz wydany uczestnikowi');
+sprawdz(
+  !terminarz.cialo.terminy.some((t: any) => t.id === 't-0'),
+  'termin przeszły nie trafia do terminarza',
+);
+
+const pilny = terminarz.cialo.terminy.find((t: any) => t.id === 't-2');
+sprawdz(
+  pilny !== undefined && pilny.dostepny === false,
+  'termin pilny zostaje na liście, ale jest niedostępny',
+);
+sprawdz(
+  typeof pilny?.powod === 'string' && pilny.powod.includes('czerwoną'),
+  'niedostępny termin pilny niesie powód, a nie znika',
+);
+sprawdz(
+  typeof terminarz.cialo.uwaga === 'string' && terminarz.cialo.uwaga.includes('Karty Pacjenta'),
+  'terminarz mówi, że rezerwacja nie jest zgodą na udostępnienie karty',
+);
+
+const rezerwacjaPilna = await zapytaj('/api/v1/consultations', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { terminId: 't-2' },
+});
+sprawdz(rezerwacjaPilna.status === 403, 'pula pilna zamknięta także po stronie serwera');
+
+const rezerwacjaPrzeszla = await zapytaj('/api/v1/consultations', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { terminId: 't-0' },
+});
+sprawdz(rezerwacjaPrzeszla.status === 400, 'terminu, który minął, nie da się zarezerwować');
+
+const bezTerminu = await zapytaj('/api/v1/consultations', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { cos: 'innego' },
+});
+sprawdz(bezTerminu.status === 400, 'żądanie bez terminId to 400');
+
+const rezerwacja = await zapytaj('/api/v1/consultations', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { terminId: 't-1', powod: 'Omówienie wyników' },
+});
+sprawdz(rezerwacja.status === 201, 'termin planowy zarezerwowany');
+sprawdz(
+  typeof rezerwacja.cialo.uwaga === 'string' && rezerwacja.cialo.uwaga.includes('osobna decyzja'),
+  'potwierdzenie rezerwacji rozdziela ją od zgody dla lekarza',
+);
+
+const podwojna = await zapytaj('/api/v1/consultations', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { terminId: 't-1' },
+});
+sprawdz(podwojna.status === 409, 'zajęty termin to konflikt, a nie błędne żądanie');
+sprawdz(podwojna.cialo?.blad?.kod === 'konflikt', 'konflikt ma własny kod maszynowy');
+
+const idKonsultacji: string = rezerwacja.cialo.konsultacja.id;
+
+const cudzeOdwolanie = await zapytaj(`/api/v1/consultations/${idKonsultacji}/cancel`, {
+  token: HR,
+  metoda: 'POST',
+});
+sprawdz(cudzeOdwolanie.status === 403, 'cudzej konsultacji nie da się odwołać');
+
+const odwolanie = await zapytaj(`/api/v1/consultations/${idKonsultacji}/cancel`, {
+  token: UCZESTNIK,
+  metoda: 'POST',
+});
+sprawdz(odwolanie.status === 200, 'uczestnik odwołuje własną konsultację');
+sprawdz(odwolanie.cialo.oplataGr === 0, 'odwołanie nie pociąga za sobą opłaty');
+
+const ponowneOdwolanie = await zapytaj(`/api/v1/consultations/${idKonsultacji}/cancel`, {
+  token: UCZESTNIK,
+  metoda: 'POST',
+});
+sprawdz(ponowneOdwolanie.status === 409, 'odwołanie odwołanej konsultacji to konflikt');
+
+const poOdwolaniu = await zapytaj('/api/v1/consultations', { token: UCZESTNIK });
+sprawdz(
+  poOdwolaniu.cialo.terminy.find((t: any) => t.id === 't-1')?.dostepny === true,
+  'odwołany termin wraca do puli',
+);
+
+// --- marketplace -------------------------------------------------------------
+
+const oferty = await zapytaj('/api/v1/marketplace/offers', { token: UCZESTNIK });
+const idOfert = oferty.cialo.oferty.map((o: any) => o.id);
+sprawdz(oferty.status === 200, 'katalog ofert wydany');
+sprawdz(!idOfert.includes('o-suple'), 'oferta partnera w negocjacjach niewidoczna');
+sprawdz(!idOfert.includes('o-prime'), 'oferta spoza pakietu niewidoczna');
+sprawdz(
+  oferty.cialo.oferty.every(
+    (o: any) => typeof o.ujawnienieProwizji === 'string' && o.ujawnienieProwizji.includes('%'),
+  ),
+  'każda oferta ujawnia prowizję programu',
+);
+
+const sauna = oferty.cialo.oferty.find((o: any) => o.id === 'o-sauna');
+sprawdz(
+  sauna?.ostrzezenia.length === 1 && sauna.ostrzezenia[0].kod === 'FLAG_HYPERTENSION',
+  'przeciwwskazanie daje ostrzeżenie przy ofercie',
+);
+sprawdz(
+  sauna?.ostrzezenia[0].tresc.includes('lekarzem'),
+  'ostrzeżenie prowadzi do lekarza, a nie ukrywa oferty',
+);
+
+const zamowienieSpozaKatalogu = await zapytaj('/api/v1/marketplace/orders', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { ofertaId: 'o-suple' },
+});
+sprawdz(
+  zamowienieSpozaKatalogu.status === 404,
+  'oferty niewidocznej w katalogu nie da się zamówić po identyfikatorze',
+);
+
+const zamowienie = await zapytaj('/api/v1/marketplace/orders', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { ofertaId: 'o-panel' },
+});
+sprawdz(zamowienie.status === 201, 'zamówienie złożone');
+sprawdz(
+  zamowienie.cialo.zamowienie.prowizjaGr === 3900 && zamowienie.cialo.zamowienie.prowizjaPct === 10,
+  'prowizja policzona i zamrożona na zamówieniu',
+);
+sprawdz(
+  zamowienie.cialo.ladunekPartnera.kodOdbioru === 'psd-8fa2',
+  'partner dostaje kod odbioru, a nie tożsamość',
+);
+sprawdz(
+  !JSON.stringify(zamowienie.cialo.ladunekPartnera).includes('healthScore') &&
+    !JSON.stringify(zamowienie.cialo.ladunekPartnera).includes('org-alfa'),
+  'ładunek dla partnera nie niesie danych zdrowotnych ani pracodawcy',
+);
+
+const zamowieniePonownie = await zapytaj('/api/v1/marketplace/orders', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { ofertaId: 'o-panel' },
+});
+sprawdz(zamowieniePonownie.status === 409, 'powtórzone zamówienie tego samego dnia to konflikt');
+
+const mojeZamowienia = await zapytaj('/api/v1/marketplace/orders', { token: UCZESTNIK });
+sprawdz(mojeZamowienia.cialo.zamowienia.length === 1, 'uczestnik widzi własne zamówienia');
+
 // --- dashboard HR ------------------------------------------------------------
 
 const dashboardUczestnik = await zapytaj('/api/v1/org/org-alfa/dashboard', { token: UCZESTNIK });
@@ -313,6 +538,54 @@ sprawdz(
   rejestr.cialo.wpisy.every((w: any) => typeof w.aktor === 'string' && !w.aktor.includes('@')),
   'rejestr pokazuje identyfikator aktora, nie dane kontaktowe',
 );
+sprawdz(
+  rejestr.cialo.wpisy.every((w: any) => typeof w.opis === 'string' && !w.opis.includes('_')),
+  'rejestr nazywa akcje zdaniem, nie kodem z bazy',
+);
+sprawdz(
+  rejestr.cialo.wpisy.some((w: any) => w.akcja === 'zamowienie_marketplace'),
+  'zamówienie u partnera jest widoczne w rejestrze uczestnika',
+);
+sprawdz(
+  rejestr.cialo.wpisy.some((w: any) => w.akcja === 'odwolanie_konsultacji'),
+  'odwołana konsultacja nie znika z rejestru',
+);
+
+// --- wycofanie zgody a dostęp do lekarza i katalogu --------------------------
+//
+// Najważniejsze sprawdzenie w tej sekcji jest negatywne: wycofanie zgody na
+// przetwarzanie danych zdrowotnych **nie może** odciąć nikogo od umówienia
+// wizyty. Kara za skorzystanie z prawa jest zaprzeczeniem tego prawa.
+
+await zapytaj('/api/v1/me/consents/dane_zdrowotne', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { udzielona: false },
+});
+
+const terminarzBezZgody = await zapytaj('/api/v1/consultations', { token: UCZESTNIK });
+sprawdz(terminarzBezZgody.status === 200, 'terminarz działa po wycofaniu zgody zdrowotnej');
+sprawdz(
+  terminarzBezZgody.cialo.terminy.some((t: any) => t.rodzaj === 'planowy' && t.dostepny),
+  'wycofanie zgody nie odcina od terminów planowych',
+);
+sprawdz(
+  terminarzBezZgody.cialo.pulaPilnaOcenionaZeZgody === false,
+  'odpowiedź mówi wprost, że pula pilna nie została oceniona',
+);
+
+const ofertyBezZgody = await zapytaj('/api/v1/marketplace/offers', { token: UCZESTNIK });
+sprawdz(
+  ofertyBezZgody.cialo.ostrzezeniaPoliczone === false &&
+    ofertyBezZgody.cialo.oferty.every((o: any) => o.ostrzezenia.length === 0),
+  'bez zgody nie zgadujemy ostrzeżeń — i mówimy, że ich nie policzyliśmy',
+);
+
+await zapytaj('/api/v1/me/consents/dane_zdrowotne', {
+  token: UCZESTNIK,
+  metoda: 'POST',
+  cialo: { udzielona: true },
+});
 
 // --- administracja -----------------------------------------------------------
 
