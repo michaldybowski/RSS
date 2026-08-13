@@ -40,7 +40,7 @@ a ruch z zewnątrz idzie przez nginx.
 
 ```bash
 # --- pakiety systemowe ---
-sudo apt update && sudo apt install -y curl git nginx chromium-browser
+sudo apt update && sudo apt install -y curl git nginx
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
 
@@ -59,8 +59,34 @@ for a in panel hr trener audytor admin api lekarz; do
 done
 ```
 
-`chromium-browser` jest potrzebny wyłącznie do generowania PDF w panelu
-uczestnika. Bez niego panel działa, a pobieranie PDF zwraca błąd.
+### 3.1 Chromium do PDF — nie z `apt`
+
+Na Ubuntu 24.04 `apt install chromium-browser` **nie instaluje przeglądarki**,
+tylko pakiet przejściowy do snapa. Snap ma własny, prywatny `/tmp`, a generator
+PDF zapisuje dokument do katalogu tymczasowego systemu i odczytuje go z powrotem
+(`packages/documents/src/pdf.ts`). Chromium ze snapa zapisze plik u siebie,
+a proces Node nie znajdzie go u siebie — i pobranie PDF skończy się błędem
+„Wynik nie jest plikiem PDF".
+
+Bierzemy przeglądarkę, której repozytorium i tak używa w testach e2e:
+
+```bash
+sudo -u longevity -i
+cd ~/longevity
+npx playwright install chromium          # jako longevity — ląduje w ~/.cache
+exit
+
+sudo npx playwright install-deps chromium   # biblioteki systemowe, jako root
+
+# stały punkt zaczepienia — ścieżka w ~/.cache zawiera numer wersji,
+# który zmienia się przy każdej aktualizacji Playwrighta
+sudo ln -sf "$(sudo -u longevity find /home/longevity/.cache/ms-playwright \
+  -name chrome -type f -path '*chrome-linux*' | head -1)" /usr/local/bin/chromium
+/usr/local/bin/chromium --version
+```
+
+Bez Chromium panel działa, a pobranie PDF zwraca błąd — HTML, DOCX i iCal
+powstają bez niego.
 
 ---
 
@@ -81,7 +107,7 @@ User=longevity
 WorkingDirectory=/home/longevity/longevity/apps/%i
 Environment=NODE_ENV=production
 Environment=HOSTNAME=127.0.0.1
-Environment=CHROMIUM_PATH=/usr/bin/chromium-browser
+Environment=CHROMIUM_PATH=/usr/local/bin/chromium
 ExecStart=/usr/bin/npm start
 Restart=on-failure
 RestartSec=5
@@ -206,7 +232,7 @@ npm run check                                   # 632 testy, typecheck
 
 # każdy przebieg jest jednorazowy — usługę restartujemy przed sprawdzeniem
 sudo systemctl restart longevity@panel
-CHROMIUM_PATH=/usr/bin/chromium-browser CHROMIUM_NO_SANDBOX=0 \
+CHROMIUM_PATH=/usr/local/bin/chromium CHROMIUM_NO_SANDBOX=0 \
   npm run panel:e2e -- --url http://127.0.0.1:3000
 ```
 
@@ -223,7 +249,7 @@ Analogicznie `hr:e2e`, `trener:e2e`, `audytor:e2e`, `admin:e2e`,
 | `api:kontrakt` | 113 | 3005 |
 | `lekarz:e2e` | 23 | 3006 |
 
-`CHROMIUM_PATH` musi wskazywać **plik wykonywalny**, nie katalog —
-na Ubuntu 24.04 z pakietu `chromium-browser` jest to `/usr/bin/chromium-browser`.
-Przebiegi e2e uruchamiamy jako użytkownik `longevity`, nie jako root; wtedy
-`CHROMIUM_NO_SANDBOX` zostaje wyłączone i piaskownica przeglądarki działa.
+`CHROMIUM_PATH` musi wskazywać **plik wykonywalny**, nie katalog — po sekcji 3.1
+jest to `/usr/local/bin/chromium`. Przebiegi e2e uruchamiamy jako użytkownik
+`longevity`, nie jako root; wtedy `CHROMIUM_NO_SANDBOX` zostaje wyłączone
+i piaskownica przeglądarki działa.

@@ -339,6 +339,7 @@ Wymuszone technicznie, nie regulaminowo:
 |---|---|
 | [01 — Specyfikacja techniczna](docs/01-specyfikacja-techniczna.md) | wersja 0.2 — decyzje 2–8 podjęte |
 | [02 — Uruchomienie testowe na CloudFerro](docs/02-uruchomienie-testowe.md) | maszyna, usługi, nginx, warunki przed pilotażem |
+| [03 — CloudFerro krok po kroku](docs/03-cloudferro-krok-po-kroku.md) | przejście przez panel i serwer, z punktem kontrolnym po każdym kroku |
 
 ## Rejestr decyzji
 
