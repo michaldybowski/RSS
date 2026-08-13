@@ -20,6 +20,7 @@ import type { ConsentLedger } from '@longevity/consent';
 import type { WynikQuizu, Zaliczenie, Zaswiadczenie } from '@longevity/academy';
 import type { Pomiar, Zapis } from '@longevity/challenges';
 import type { Konsultacja } from '@longevity/clinical';
+import type { Zamowienie } from '@longevity/marketplace';
 import type { AnswerValue, ValidationIssue } from '@longevity/questionnaire';
 import type { PipelineResult } from '@longevity/plan';
 
@@ -52,6 +53,7 @@ export interface PanelSession {
   zaliczenia: Zaliczenie[];
   zaswiadczenia: Zaswiadczenie[];
   konsultacje: Konsultacja[];
+  zamowienia: Zamowienie[];
   /** Powód odrzucenia ostatniej rezerwacji — pokazywany przy terminarzu. */
   bladRezerwacji?: string | undefined;
   /** Wynik ostatniego sprawdzianu — do pokazania po wysłaniu formularza. */
@@ -76,6 +78,7 @@ function create(id: string): PanelSession {
     zaliczenia: [],
     zaswiadczenia: [],
     konsultacje: [],
+    zamowienia: [],
   };
 }
 

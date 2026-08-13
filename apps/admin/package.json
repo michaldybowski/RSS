@@ -15,6 +15,7 @@
     "@longevity/consent": "*",
     "@longevity/core": "*",
     "@longevity/gdpr": "*",
+    "@longevity/marketplace": "*",
     "@longevity/notion-sync": "*",
     "@longevity/questionnaire": "*",
     "next": "^15.5.0",

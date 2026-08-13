@@ -26,6 +26,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               <a href="/synchronizacja">Synchronizacja</a>
               <a href="/rodo">Wnioski osób</a>
               <a href="/retencja">Retencja</a>
+              <a href="/prowizje">Prowizje</a>
               <a href="/stan">Stan systemu</a>
               <a href="/" style={{ marginLeft: 'auto' }}>
                 {sesja.konto.opis} — zmień

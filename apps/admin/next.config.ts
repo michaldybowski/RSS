@@ -8,6 +8,8 @@ const config: NextConfig = {
     '@longevity/consent',
     '@longevity/core',
     '@longevity/gdpr',
+    '@longevity/marketplace',
+    '@longevity/model-payload',
     '@longevity/notion-sync',
     '@longevity/questionnaire',
   ],

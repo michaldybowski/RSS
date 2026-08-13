@@ -490,6 +490,45 @@ try {
     'zasada braku opłaty za odwołanie jest napisana wprost',
   );
   sprawdz(!/\d+[,.]\d\d\s*zł/u.test(poOdwolaniu), 'nigdzie nie pojawia się kwota do zapłaty');
+
+  // --- marketplace ----------------------------------------------------------
+  await page.goto(`${baseUrl}/wynik`);
+  await page.click('a:has-text("Otwórz marketplace")');
+  await page.waitForSelector('h1:has-text("Marketplace")', { timeout: 30_000 });
+
+  const marketplace = await page.content();
+  sprawdz(marketplace.includes('Panel Bazowy Longevity'), 'katalog ofert otwarty');
+  sprawdz(
+    marketplace.includes('nie jest') && marketplace.includes('dobierany'),
+    'katalog mówi wprost, że nie dobiera ofert po wynikach',
+  );
+  sprawdz(marketplace.includes('% prowizji'), 'prowizja ujawniona przy ofertach');
+  sprawdz(
+    !marketplace.includes('Zestaw witamin'),
+    'oferta partnera w negocjacjach nie trafia do katalogu',
+  );
+  await zrzut(page, '12-marketplace');
+
+  // Filtr kategorii działa po stronie serwera.
+  await page.goto(`${baseUrl}/marketplace?kategoria=sport`);
+  await page.waitForSelector('h1:has-text("Marketplace")', { timeout: 30_000 });
+  const sport = await page.content();
+  sprawdz(sport.includes('Karnet miesięczny'), 'filtr kategorii pokazuje oferty sportowe');
+  sprawdz(!sport.includes('Panel Bazowy Longevity'), 'filtr kategorii odcina resztę');
+
+  // Zamówienie.
+  await page.goto(`${baseUrl}/marketplace`);
+  await page.waitForSelector('h1:has-text("Marketplace")', { timeout: 30_000 });
+  await page.click('.wyzwanie:has-text("Panel Bazowy Longevity") button:has-text("Zamów")');
+  await page.waitForSelector('h2:has-text("Twoje zamówienia")', { timeout: 30_000 });
+
+  const poZamowieniu = await page.locator('body').innerText();
+  sprawdz(poZamowieniu.includes('390,00 zł'), 'zamówienie ma kwotę netto');
+  sprawdz(
+    poZamowieniu.includes('Nie otrzymuje Twojego') || poZamowieniu.includes('nie otrzymuje'),
+    'panel mówi, czego partner nie dostaje',
+  );
+  await zrzut(page, '13-zamowienie');
 } finally {
   await browser.close();
 }

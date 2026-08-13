@@ -15,6 +15,7 @@
     "@longevity/consent": "*",
     "@longevity/core": "*",
     "@longevity/documents": "*",
+    "@longevity/marketplace": "*",
     "@longevity/plan": "*",
     "@longevity/questionnaire": "*",
     "next": "^15.5.0",

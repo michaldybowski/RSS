@@ -15,10 +15,10 @@ z certyfikacją, panel audytora, panel administratora, wyzwania i gamifikacja
 oraz biblioteka i Akademia. **Faza B zamknięta.**
 
 **Faza C — w toku.** Gotowe: API v1 (ADR-05 — jeden backend dla portalu
-i aplikacji mobilnej) oraz moduł medyczny (terminarz konsultacji, Karta
-Pacjenta za zgodą, zlecenia badań, panel lekarza). Zostaje: aplikacja Expo
-z HealthKit i Health Connect, powiadomienia push, marketplace i prowizje,
-moduł PRIME.
+i aplikacji mobilnej), moduł medyczny (terminarz konsultacji, Karta Pacjenta
+za zgodą, zlecenia badań, panel lekarza) oraz marketplace partnerów
+z rozliczeniem prowizji. Zostaje: aplikacja Expo z HealthKit i Health Connect,
+powiadomienia push, moduł PRIME.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -101,6 +101,7 @@ apps/admin/                  panel administratora — utrzymanie systemu
   app/synchronizacja/        zapowiedź różnic, potwierdzenie źródeł krytycznych
   app/rodo/                  wnioski osób; metadane pakietu zamiast treści
   app/retencja/              zadania wymagalne i ich wykonanie
+  app/prowizje/              faktury prowizyjne linii M dla partnerów
   app/stan/                  wersje reguł i warunki przed produkcją
   lib/operacje.ts            jedyne wejście: autoryzacja + audit log
 apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
@@ -108,6 +109,7 @@ apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
   app/wyzwania/              katalog z powodem wstrzymania, punkty, ranking
   app/wyzwania/[id]/         wpis dzienny, passa, historia pomiarów
   app/konsultacje/           terminarz z pulą pilną i odwoływaniem wizyt
+  app/marketplace/           katalog ofert z ujawnioną prowizją
   app/biblioteka/            katalog treści z filtrami i propozycjami
   app/biblioteka/[id]/       materiał, ostrzeżenia, sprawdzian z wyjaśnieniami
   app/akademia/              ścieżki nauki, postęp modułów, zaświadczenie
@@ -169,6 +171,10 @@ packages/workshops/          warsztaty on-site
   src/enrollment.ts          zapisy, lista rezerwowa, awans po zwolnieniu
   src/attendance.ts          obecności, lista dla trenera, frekwencja
   src/settlement.ts          rozliczenie trenera
+packages/marketplace/        marketplace i prowizje — linia M (specyfikacja 13)
+  src/katalog.ts             widoczność partnerów, ujawnienie prowizji
+  src/zamowienia.ts          zamówienie i zminimalizowany ładunek dla partnera
+  src/prowizje.ts            faktura prowizyjna za zamówienia zrealizowane
 packages/clinical/           moduł medyczny (specyfikacja 6.4 i 8)
   src/terminarz.ts           pula pilna, okno odwołania, rozliczenie wizyty
   src/zlecenia.ts            propozycja z reguł, podpis lekarza, wydruk
@@ -296,6 +302,17 @@ Wymuszone technicznie, nie regulaminowo:
 29. **Rezerwacja wizyty to nie zgoda na Kartę Pacjenta.** Dwie osobne decyzje:
     rozmowa może się odbyć bez udostępniania wyników. Późne odwołanie jest
     odnotowane, ale bez opłaty — kara zniechęca do odwoływania, nie do chorowania.
+30. **Prowizja nie zależy od danych zdrowotnych.** Funkcje wystawiające oferty
+    nie przyjmują oceny ryzyka — ocena może wyłącznie **ograniczyć** (ostrzeżenie
+    przy przeciwwskazaniu), nigdy podbić sprzedaży. Program, który zarabia więcej,
+    gdy komuś pogarszają się wyniki, przestaje być programem zdrowotnym.
+31. **Wysokość prowizji jest ujawniona przy każdej ofercie.** Uczestnik ma
+    wiedzieć, że program zarabia na jego zakupie; partner bez podpisanej umowy
+    w ogóle nie pojawia się w katalogu.
+32. **Partner dostaje kod odbioru i przedmiot zamówienia.** Nie tożsamość, nie
+    pracodawcę i nic z oceny zdrowia — ładunek przechodzi przez ten sam skaner
+    nazw pól, co ładunek dla modelu językowego. Faktura prowizyjna nie zawiera
+    nawet pseudonimów i obejmuje wyłącznie zamówienia zrealizowane.
 
 ## Dokumenty
 

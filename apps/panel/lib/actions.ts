@@ -23,6 +23,7 @@ import {
 import { generatePlan } from '@longevity/plan';
 import { dolacz, zapiszPomiar } from '@longevity/challenges';
 import { odwolaj, zarezerwuj } from '@longevity/clinical';
+import { zloz } from '@longevity/marketplace';
 import {
   ocenQuiz,
   postepSciezki,
@@ -36,6 +37,7 @@ import { ensureSessionCookie, getSession, resetSession, saveSession } from './se
 import { NOW, ONBOARDING_CONSENTS } from './config.ts';
 import { MATERIALY, materialPoIdentyfikatorze, QUIZY, sciezkaPoId } from './akademia.ts';
 import { terminPoId, TERAZ as TERAZ_KONSULTACJE } from './konsultacje.ts';
+import { OFERTY, PARTNERZY, TERAZ_MARKETPLACE } from './marketplace.ts';
 import {
   DZISIAJ,
   PAKIET_UCZESTNIKA,
@@ -328,4 +330,25 @@ export async function odwolajTermin(formData: FormData): Promise<void> {
 
   saveSession(session);
   revalidatePath('/konsultacje');
+}
+
+/**
+ * Zamówienie u partnera.
+ *
+ * Kwalifikacja partnera jest w pakiecie: zamówienie u partnera bez podpisanej
+ * umowy rzuca wyjątkiem, a nie tworzy transakcji, której nikt nie honoruje.
+ */
+export async function zamowUsluge(formData: FormData): Promise<void> {
+  const session = await getSession();
+  const oferta = OFERTY.find((pozycja) => pozycja.id === String(formData.get('ofertaId') ?? ''));
+  const partner = PARTNERZY.find((pozycja) => pozycja.id === oferta?.partnerId);
+  if (oferta === undefined || partner === undefined) redirect('/marketplace');
+
+  session.zamowienia = [
+    ...session.zamowienia,
+    zloz(oferta, partner, SUBJECT_REF, TERAZ_MARKETPLACE),
+  ];
+
+  saveSession(session);
+  revalidatePath('/marketplace');
 }

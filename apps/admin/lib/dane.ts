@@ -14,6 +14,10 @@
 import type { Actor } from '@longevity/access';
 import type { Rekord, WniosekOsoby, ZbiorPodmiotu } from '@longevity/gdpr';
 import type {
+  Partner as MarketPartner,
+  Zamowienie as MarketZamowienie,
+} from '@longevity/marketplace';
+import type {
   DataSourceIds,
   NotionPage,
   NotionQuery,
@@ -324,3 +328,72 @@ export const OPIS_AKCJI_RETENCJI: Readonly<Record<string, string>> = {
   usun: 'usunięcie',
   agreguj_dobowo: 'agregacja do danych dobowych',
 };
+
+// ---------------------------------------------------------------------------
+// Marketplace
+// ---------------------------------------------------------------------------
+
+export const OKRES_PROWIZJI = '2026-09';
+
+/** Stawka VAT usługi pośrednictwa — parametr księgowy, nie stała w kodzie. */
+export const VAT_PROWIZJI = '23' as const;
+
+export const PARTNERZY: readonly MarketPartner[] = [
+  {
+    id: 'p-lab',
+    nazwa: 'Laboratorium Alfa',
+    kategoria: 'diagnostyka',
+    opis: 'Sieć punktów pobrań.',
+    prowizjaPct: 10,
+    statusUmowy: 'podpisana',
+  },
+  {
+    id: 'p-klub',
+    nazwa: 'Klub Ruchu Beta',
+    kategoria: 'sport',
+    opis: 'Zajęcia grupowe i siłownia.',
+    prowizjaPct: 15,
+    statusUmowy: 'podpisana',
+  },
+  {
+    id: 'p-suple',
+    nazwa: 'Suplementy Gamma',
+    kategoria: 'suplementy',
+    opis: 'Umowa w negocjacjach.',
+    prowizjaPct: 25,
+    statusUmowy: 'negocjacje',
+  },
+];
+
+function zamowienie(
+  id: string,
+  partnerId: string,
+  nettoGr: number,
+  prowizjaPct: number,
+  status: MarketZamowienie['status'],
+  dzien: string,
+): MarketZamowienie {
+  return {
+    id,
+    ofertaId: `o-${id}`,
+    partnerId,
+    subjectRef: `psd-${id}`,
+    kwotaNettoGr: nettoGr,
+    stawkaVat: '23',
+    prowizjaPct,
+    prowizjaGr: Math.round((nettoGr * prowizjaPct) / 100),
+    zlozone: `${dzien}T10:00:00.000Z`,
+    status,
+    ...(status === 'zrealizowane' ? { zrealizowane: `${dzien}T18:00:00.000Z` } : {}),
+  };
+}
+
+export const ZAMOWIENIA: readonly MarketZamowienie[] = [
+  zamowienie('a1', 'p-lab', 39_000, 10, 'zrealizowane', '2026-09-04'),
+  zamowienie('a2', 'p-lab', 9_000, 10, 'zrealizowane', '2026-09-11'),
+  zamowienie('a3', 'p-lab', 39_000, 10, 'anulowane', '2026-09-12'),
+  zamowienie('b1', 'p-klub', 14_900, 15, 'zrealizowane', '2026-09-06'),
+  zamowienie('b2', 'p-klub', 14_900, 15, 'zlozone', '2026-09-28'),
+  // Zamówienie z poprzedniego okresu — nie wejdzie do faktury za wrzesień.
+  zamowienie('a0', 'p-lab', 39_000, 10, 'zrealizowane', '2026-08-30'),
+];
