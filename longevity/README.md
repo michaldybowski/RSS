@@ -14,6 +14,11 @@ i retencja, panel HR, warsztaty i obecności, panel trenera, audyt Zdrowe Biuro
 z certyfikacją, panel audytora, panel administratora, wyzwania i gamifikacja
 oraz biblioteka i Akademia. **Faza B zamknięta.**
 
+**Faza C — w toku.** Gotowe: API v1 (ADR-05 — jeden backend dla portalu
+i aplikacji mobilnej). Zostaje: aplikacja Expo z HealthKit i Health Connect,
+powiadomienia push, marketplace i prowizje, moduł PRIME, moduł medyczny
+(rezerwacje i skierowania).
+
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
 (decyzja 8) i zamknięcia bramki z sekcji 12.6 specyfikacji.
@@ -48,6 +53,10 @@ CHROMIUM_PATH=/ścieżka/do/chrome npm run audytor:e2e -- --url http://127.0.0.1
 # Panel administratora (przebieg e2e jest jednorazowy — serwer na świeżo)
 npm run admin:build && npm start --workspace @longevity/admin
 CHROMIUM_PATH=/ścieżka/do/chrome npm run admin:e2e -- --url http://127.0.0.1:3004
+
+# API v1 (sprawdzenie kontraktu jest jednorazowe — serwer na świeżo)
+npm run api:build && npm start --workspace @longevity/api
+npm run api:kontrakt -- --url http://127.0.0.1:3005
 ```
 
 Wymagany Node 22+. PDF powstaje przez Chromium w trybie bezgłowym; bez
@@ -71,6 +80,15 @@ apps/trener/                 panel trenera — warsztaty i obecności
 apps/audytor/                panel audytora — Zdrowe Biuro i certyfikacja
   app/audyty/[id]/           arkusz kryteriów z wynikiem i listą braków
   app/rejestr/               publiczna weryfikacja numeru certyfikatu
+apps/api/                    API v1 — jeden backend dla portalu i mobile (ADR-05)
+  app/api/v1/me/             konto, zgody, rejestr dostępu do własnych danych
+  app/api/v1/health-score/   ocena za bramką zgody, z wpisem w audit logu
+  app/api/v1/challenges/     katalog z powodem odmowy, zapis walidowany serwerowo
+  app/api/v1/wearables/      wsad z telefonu, próbka po próbce
+  app/api/v1/org/[id]/       dashboard bez parametru identyfikującego osobę
+  app/api/v1/clinician/      Karta Pacjenta — rola, zgoda i log
+  lib/odpowiedzi.ts          kontrakt błędu i mapowanie wyjątków na kody HTTP
+  lib/auth.ts                token jako sekret; ta sama odpowiedź na brak i zły
 apps/admin/                  panel administratora — utrzymanie systemu
   app/synchronizacja/        zapowiedź różnic, potwierdzenie źródeł krytycznych
   app/rodo/                  wnioski osób; metadane pakietu zamiast treści
@@ -243,6 +261,19 @@ Wymuszone technicznie, nie regulaminowo:
 22. **Wycofanie treści nie unieważnia czyjejś nauki.** Moduł, którego materiał
     zniknął z biblioteki, wypada z wymagań ścieżki i przestaje zamykać kolejne —
     razem z tytułem, żeby było wiadomo, czego dotyczył.
+23. **Brak tokenu i zły token dają identyczną odpowiedź.** Rozróżnienie ich
+    pozwalałoby sprawdzać tokeny po jednym i wykrywać, które istnieją. Nieznana
+    ścieżka też trzyma kontrakt błędu — nie odsyła strony HTML, której klient
+    mobilny nie umie odczytać.
+24. **Dashboard organizacji odrzuca parametr identyfikujący osobę.** Nie ignoruje
+    go po cichu, tylko odpowiada błędem z listą zakazanych parametrów. To
+    ograniczenie kontraktu, nie tylko implementacji.
+25. **Wsad z telefonu jest przetwarzany próbka po próbce.** Odrzucenie całej
+    paczki z powodu jednego złego dnia oznaczałoby, że telefon po tygodniu bez
+    zasięgu nie wgra niczego. Odpowiedź mówi, które próbki odpadły i dlaczego.
+26. **Uczestnik widzi, kto oglądał jego dane.** Rejestr dostępu obejmuje także
+    próby nieudane — log, który zapisuje wyłącznie udane odczyty, nie odpowiada
+    na pytanie „kto próbował".
 
 ## Dokumenty
 

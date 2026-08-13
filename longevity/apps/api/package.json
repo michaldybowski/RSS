@@ -1,0 +1,27 @@
+{
+  "name": "@longevity/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API v1 — jeden backend dla portalu i aplikacji mobilnej (ADR-05)",
+  "scripts": {
+    "dev": "next dev -p 3005",
+    "build": "next build",
+    "start": "next start -p 3005"
+  },
+  "dependencies": {
+    "@longevity/academy": "*",
+    "@longevity/access": "*",
+    "@longevity/analytics": "*",
+    "@longevity/challenges": "*",
+    "@longevity/consent": "*",
+    "@longevity/core": "*",
+    "@longevity/gdpr": "*",
+    "@longevity/notion-sync": "*",
+    "next": "^15.5.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18"
+  }
+}
