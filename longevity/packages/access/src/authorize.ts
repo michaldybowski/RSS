@@ -128,6 +128,33 @@ export function can(
         : ODMOWA('Ustalenia może zapisać wyłącznie audytor prowadzący.');
     }
 
+    case 'rezerwacja_konsultacji': {
+      // Rezerwację składa się wyłącznie dla siebie. Zapisywanie kogoś innego
+      // na wizytę u lekarza jest decyzją zdrowotną za tę osobę.
+      if (resource.kind !== 'konsultacja') return ODMOWA('Zasób nie jest konsultacją.');
+      return resource.participantId === actor.userId
+        ? ZGODA
+        : ODMOWA('Termin można zarezerwować wyłącznie dla siebie.');
+    }
+
+    case 'prowadzenie_konsultacji': {
+      if (resource.kind !== 'konsultacja') return ODMOWA('Zasób nie jest konsultacją.');
+      if (!hasRole(actor, 'lekarz', org)) return ODMOWA('Wymagana rola lekarza w tej organizacji.');
+      return resource.clinicianId === actor.userId
+        ? ZGODA
+        : ODMOWA('Konsultację prowadzi wyłącznie lekarz do niej przypisany.');
+    }
+
+    case 'zatwierdzenie_zlecenia_badan': {
+      // Zlecenie badań podpisuje lekarz, nie platforma. Bez tej reguły
+      // propozycja wygenerowana z reguł stawałaby się dokumentem sama z siebie.
+      if (resource.kind !== 'konsultacja') return ODMOWA('Zasób nie jest konsultacją.');
+      if (!hasRole(actor, 'lekarz', org)) return ODMOWA('Zlecenie badań zatwierdza lekarz.');
+      return resource.clinicianId === actor.userId
+        ? ZGODA
+        : ODMOWA('Zlecenie zatwierdza lekarz prowadzący tę konsultację.');
+    }
+
     case 'odczyt_rozliczen': {
       if (resource.kind !== 'organizacja') return ODMOWA('Rozliczenia dotyczą organizacji.');
       return hasRole(actor, 'hr', org)

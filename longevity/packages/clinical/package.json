@@ -1,0 +1,16 @@
+{
+  "name": "@longevity/clinical",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Moduł medyczny — terminarz konsultacji, notatki i zlecenia badań (specyfikacja 6.4 i 8)",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@longevity/access": "*",
+    "@longevity/core": "*",
+    "@longevity/plan": "*"
+  }
+}

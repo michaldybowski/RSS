@@ -22,6 +22,7 @@ import {
 } from '@longevity/questionnaire';
 import { generatePlan } from '@longevity/plan';
 import { dolacz, zapiszPomiar } from '@longevity/challenges';
+import { odwolaj, zarezerwuj } from '@longevity/clinical';
 import {
   ocenQuiz,
   postepSciezki,
@@ -34,6 +35,7 @@ import { PROTOTYPE_MODEL } from './prototypeModel.ts';
 import { ensureSessionCookie, getSession, resetSession, saveSession } from './session.ts';
 import { NOW, ONBOARDING_CONSENTS } from './config.ts';
 import { MATERIALY, materialPoIdentyfikatorze, QUIZY, sciezkaPoId } from './akademia.ts';
+import { terminPoId, TERAZ as TERAZ_KONSULTACJE } from './konsultacje.ts';
 import {
   DZISIAJ,
   PAKIET_UCZESTNIKA,
@@ -273,4 +275,57 @@ export async function odbierzZaswiadczenie(formData: FormData): Promise<void> {
 
   saveSession(session);
   revalidatePath('/akademia');
+}
+
+/**
+ * Rezerwacja konsultacji.
+ *
+ * Reguła puli pilnej jest w pakiecie, nie tutaj — panel pokazuje jej skutek
+ * i powód, a nie decyduje o dostępie. Odmowa wraca do uczestnika komunikatem,
+ * bo „nie da się" bez wyjaśnienia wygląda jak awaria.
+ */
+export async function zarezerwujTermin(formData: FormData): Promise<void> {
+  const session = await getSession();
+  if (session.assessment === undefined) redirect('/');
+
+  const termin = terminPoId(String(formData.get('terminId') ?? ''));
+  if (termin === undefined) redirect('/konsultacje');
+
+  try {
+    session.konsultacje = [
+      ...session.konsultacje,
+      zarezerwuj(session.konsultacje, {
+        termin,
+        participantId: SUBJECT_REF,
+        subjectRef: SUBJECT_REF,
+        kategoria: session.assessment.riskCategory,
+        teraz: TERAZ_KONSULTACJE,
+        powod: String(formData.get('powod') ?? ''),
+      }),
+    ];
+    session.bladRezerwacji = undefined;
+  } catch (blad) {
+    session.bladRezerwacji =
+      blad instanceof Error ? blad.message : 'Nie udało się zarezerwować terminu.';
+  }
+
+  saveSession(session);
+  revalidatePath('/konsultacje');
+}
+
+export async function odwolajTermin(formData: FormData): Promise<void> {
+  const session = await getSession();
+  const konsultacja = session.konsultacje.find(
+    (pozycja) => pozycja.id === String(formData.get('konsultacjaId') ?? ''),
+  );
+  const termin = konsultacja === undefined ? undefined : terminPoId(konsultacja.terminId);
+  if (konsultacja === undefined || termin === undefined) redirect('/konsultacje');
+
+  const odwolana = odwolaj(konsultacja, termin, TERAZ_KONSULTACJE);
+  session.konsultacje = session.konsultacje.map((pozycja) =>
+    pozycja.id === odwolana.id ? odwolana : pozycja,
+  );
+
+  saveSession(session);
+  revalidatePath('/konsultacje');
 }

@@ -15,9 +15,10 @@ z certyfikacją, panel audytora, panel administratora, wyzwania i gamifikacja
 oraz biblioteka i Akademia. **Faza B zamknięta.**
 
 **Faza C — w toku.** Gotowe: API v1 (ADR-05 — jeden backend dla portalu
-i aplikacji mobilnej). Zostaje: aplikacja Expo z HealthKit i Health Connect,
-powiadomienia push, marketplace i prowizje, moduł PRIME, moduł medyczny
-(rezerwacje i skierowania).
+i aplikacji mobilnej) oraz moduł medyczny (terminarz konsultacji, Karta
+Pacjenta za zgodą, zlecenia badań, panel lekarza). Zostaje: aplikacja Expo
+z HealthKit i Health Connect, powiadomienia push, marketplace i prowizje,
+moduł PRIME.
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -57,6 +58,10 @@ CHROMIUM_PATH=/ścieżka/do/chrome npm run admin:e2e -- --url http://127.0.0.1:3
 # API v1 (sprawdzenie kontraktu jest jednorazowe — serwer na świeżo)
 npm run api:build && npm start --workspace @longevity/api
 npm run api:kontrakt -- --url http://127.0.0.1:3005
+
+# Panel lekarza (przebieg e2e jest jednorazowy — serwer na świeżo)
+npm run lekarz:build && npm start --workspace @longevity/lekarz
+CHROMIUM_PATH=/ścieżka/do/chrome npm run lekarz:e2e -- --url http://127.0.0.1:3006
 ```
 
 Wymagany Node 22+. PDF powstaje przez Chromium w trybie bezgłowym; bez
@@ -80,6 +85,9 @@ apps/trener/                 panel trenera — warsztaty i obecności
 apps/audytor/                panel audytora — Zdrowe Biuro i certyfikacja
   app/audyty/[id]/           arkusz kryteriów z wynikiem i listą braków
   app/rejestr/               publiczna weryfikacja numeru certyfikatu
+apps/lekarz/                 panel lekarza — grafik, karta, zlecenia
+  app/grafik/                konsultacje dnia, pacjenci pod pseudonimem
+  app/konsultacje/[id]/      karta za zgodą, notatka, podpis pod zleceniem
 apps/api/                    API v1 — jeden backend dla portalu i mobile (ADR-05)
   app/api/v1/me/             konto, zgody, rejestr dostępu do własnych danych
   app/api/v1/health-score/   ocena za bramką zgody, z wpisem w audit logu
@@ -99,6 +107,7 @@ apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
   app/                       krok 0, kwestionariusz, podsumowanie, wynik
   app/wyzwania/              katalog z powodem wstrzymania, punkty, ranking
   app/wyzwania/[id]/         wpis dzienny, passa, historia pomiarów
+  app/konsultacje/           terminarz z pulą pilną i odwoływaniem wizyt
   app/biblioteka/            katalog treści z filtrami i propozycjami
   app/biblioteka/[id]/       materiał, ostrzeżenia, sprawdzian z wyjaśnieniami
   app/akademia/              ścieżki nauki, postęp modułów, zaświadczenie
@@ -160,6 +169,9 @@ packages/workshops/          warsztaty on-site
   src/enrollment.ts          zapisy, lista rezerwowa, awans po zwolnieniu
   src/attendance.ts          obecności, lista dla trenera, frekwencja
   src/settlement.ts          rozliczenie trenera
+packages/clinical/           moduł medyczny (specyfikacja 6.4 i 8)
+  src/terminarz.ts           pula pilna, okno odwołania, rozliczenie wizyty
+  src/zlecenia.ts            propozycja z reguł, podpis lekarza, wydruk
 packages/academy/            biblioteka treści i Akademia (specyfikacja 9 i 14)
   src/biblioteka.ts          katalog, filtry, ostrzeżenia zamiast blokad
   src/quiz.ts                sprawdzian wiedzy, próg zaliczenia, wyjaśnienia
@@ -274,6 +286,16 @@ Wymuszone technicznie, nie regulaminowo:
 26. **Uczestnik widzi, kto oglądał jego dane.** Rejestr dostępu obejmuje także
     próby nieudane — log, który zapisuje wyłącznie udane odczyty, nie odpowiada
     na pytanie „kto próbował".
+27. **Platforma proponuje badania, zleca je lekarz.** Zakres wynika z reguł,
+    ale dokument powstaje dopiero po podpisie: propozycji nie da się wydrukować,
+    lekarz może usunąć pozycje przed podpisem, a odrzucenie wymaga uzasadnienia
+    widocznego dla uczestnika.
+28. **Pula pilna jest zamknięta dla zapisów planowych.** Terminy pilne istnieją
+    po to, żeby osoba z zatrzymanym planem dostała lekarza w kilka dni — gdyby
+    mógł je zająć zapis planowy, znikałyby pierwszego dnia.
+29. **Rezerwacja wizyty to nie zgoda na Kartę Pacjenta.** Dwie osobne decyzje:
+    rozmowa może się odbyć bez udostępniania wyników. Późne odwołanie jest
+    odnotowane, ale bez opłaty — kara zniechęca do odwoływania, nie do chorowania.
 
 ## Dokumenty
 

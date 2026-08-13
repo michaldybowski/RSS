@@ -450,6 +450,46 @@ try {
     'zaświadczenie należy do uczestnika',
   );
   await zrzut(page, '10-akademia');
+
+  // --- konsultacje ----------------------------------------------------------
+  await page.goto(`${baseUrl}/wynik`);
+  await page.click('a:has-text("Umów konsultację")');
+  await page.waitForSelector('h1:has-text("Konsultacje")', { timeout: 30_000 });
+
+  const terminarz = await page.content();
+  sprawdz(
+    terminarz.includes('nie jest') && terminarz.includes('Karty Pacjenta'),
+    'terminarz rozdziela rezerwację od zgody na kartę',
+  );
+  sprawdz(terminarz.includes('pula pilna'), 'termin pilny jest oznaczony');
+  sprawdz(
+    terminarz.includes('zarezerwowana dla osób z czerwoną kategorią'),
+    'pula pilna zamknięta dla zielonej kategorii, z powodem',
+  );
+  sprawdz(!terminarz.includes('2026-07-20'), 'terminy minione nie są pokazywane');
+
+  await page.fill('#powod-t-1', 'Omówienie wyników');
+  await page.click('.wyzwanie:has-text("2026-07-28") button:has-text("Zarezerwuj")');
+  await page.waitForSelector('h2:has-text("Twoje wizyty")', { timeout: 30_000 });
+  const poRezerwacji = await page.content();
+  sprawdz(poRezerwacji.includes('dr Anna Wilk'), 'rezerwacja widoczna z lekarzem');
+  sprawdz(
+    !poRezerwacji.includes('.wyzwanie:has-text("2026-07-28") button'),
+    'zajęty termin znika z listy wolnych',
+  );
+  await zrzut(page, '11-konsultacje');
+
+  await page.click('button:has-text("Odwołaj")');
+  await page.waitForSelector('td:has-text("odwołana")', { timeout: 30_000 });
+  sprawdz(true, 'wizytę można odwołać');
+  // Naiwne szukanie słowa „opłata" trafiałoby w zdanie, które właśnie mówi,
+  // że opłaty nie ma. Sprawdzamy więc brak kwoty i obecność zasady.
+  const poOdwolaniu = await page.locator('body').innerText();
+  sprawdz(
+    poOdwolaniu.includes('nie wiąże się z żadną opłatą'),
+    'zasada braku opłaty za odwołanie jest napisana wprost',
+  );
+  sprawdz(!/\d+[,.]\d\d\s*zł/u.test(poOdwolaniu), 'nigdzie nie pojawia się kwota do zapłaty');
 } finally {
   await browser.close();
 }

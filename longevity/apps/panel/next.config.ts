@@ -7,6 +7,7 @@ const config: NextConfig = {
     '@longevity/academy',
     '@longevity/analytics',
     '@longevity/challenges',
+    '@longevity/clinical',
     '@longevity/core',
     '@longevity/consent',
     '@longevity/questionnaire',

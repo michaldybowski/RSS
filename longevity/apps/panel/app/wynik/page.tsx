@@ -182,6 +182,17 @@ export default async function Wynik() {
         </a>
       </div>
 
+      <div className="karta">
+        <h2 style={{ marginTop: 0 }}>Konsultacja</h2>
+        <p style={{ marginTop: 0 }}>
+          Rozmowa z lekarzem o wynikach i planie. Rezerwacja terminu nie jest zgodą
+          na udostępnienie Karty Pacjenta — o tym decydujesz osobno.
+        </p>
+        <a className="przycisk" href="/konsultacje">
+          Umów konsultację
+        </a>
+      </div>
+
       <form action={startOver}>
         <div className="akcje">
           <button type="submit" className="wtorny">
