@@ -23,7 +23,9 @@
     "audytor:build": "npm run build --workspace @longevity/audytor",
     "audytor:e2e": "node --import tsx apps/audytor/e2e/przejscie.mts",
     "admin:build": "npm run build --workspace @longevity/admin",
-    "admin:e2e": "node --import tsx apps/admin/e2e/przejscie.mts"
+    "admin:e2e": "node --import tsx apps/admin/e2e/przejscie.mts",
+    "api:build": "npm run build --workspace @longevity/api",
+    "api:kontrakt": "node --import tsx apps/api/e2e/kontrakt.mts"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
