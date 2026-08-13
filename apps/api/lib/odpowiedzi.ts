@@ -23,6 +23,7 @@ export type KodBledu =
   | 'brak_zgody'
   | 'nie_znaleziono'
   | 'bledne_zadanie'
+  | 'konflikt'
   | 'odrzucone_dane'
   | 'blad_wewnetrzny';
 
@@ -32,6 +33,10 @@ const STATUSY: Readonly<Record<KodBledu, number>> = {
   brak_zgody: 403,
   nie_znaleziono: 404,
   bledne_zadanie: 400,
+  // Konflikt jest osobny od błędnego żądania celowo. Zajęty termin oznacza
+  // dla klienta mobilnego „odśwież listę i wybierz inny", a nie „popraw
+  // żądanie" — z jednym kodem 400 nie dałoby się tych dwóch rozróżnić.
+  konflikt: 409,
   odrzucone_dane: 422,
   blad_wewnetrzny: 500,
 };
@@ -134,8 +139,9 @@ export function zBleduDomenowego(powod: unknown): Response | undefined {
       return blad('brak_zgody', powod.message);
 
     case 'WyzwanieNiedozwoloneError':
-      // Odmowa kwalifikacji do wyzwania jest decyzją o uprawnieniu do operacji,
-      // a nie błędem danych — dlatego 403, nie 422.
+    case 'TerminPilnyNiedostepnyError':
+      // Odmowa kwalifikacji — do wyzwania albo do puli pilnej — jest decyzją
+      // o uprawnieniu do operacji, a nie błędem danych: dlatego 403, nie 422.
       return blad('brak_uprawnien', powod.message);
 
     case 'PomiarPozaOknemError':
@@ -143,7 +149,20 @@ export function zBleduDomenowego(powod: unknown): Response | undefined {
     case 'PomiarPrzedStartemError':
       return blad('odrzucone_dane', powod.message);
 
+    case 'SprawdzianNiezaliczonyError':
+      // Żądanie było poprawne i uprawnione; nie przeszła treść odpowiedzi.
+      return blad('odrzucone_dane', powod.message);
+
+    case 'TerminZajetyError':
+    case 'ZlyStatusKonsultacjiError':
+    case 'ZlyStatusZamowieniaError':
+    case 'NieaktywnyPartnerError':
+      // Stan zasobu po stronie serwera rozminął się z tym, co widział klient.
+      return blad('konflikt', powod.message);
+
     case 'BledneZadanieError':
+    case 'TerminMinalError':
+    case 'WymaganySprawdzianError':
       return blad('bledne_zadanie', powod.message);
 
     case 'UnknownConsentError':

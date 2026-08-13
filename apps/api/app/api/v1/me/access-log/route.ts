@@ -1,3 +1,5 @@
+import { OPIS_AKCJI } from '@longevity/gdpr';
+
 import { zKontem } from '../../../../../lib/auth.ts';
 import { ok } from '../../../../../lib/odpowiedzi.ts';
 import { AUDIT } from '../../../../../lib/stan.ts';
@@ -21,6 +23,10 @@ export function GET(request: Request): Promise<Response> {
           id: wpis.id,
           kiedy: wpis.at,
           akcja: wpis.akcja,
+          // Kod dla klienta i zdanie dla człowieka jadą razem. Sam kod zmusiłby
+          // każdą aplikację do własnego słownika, a sam opis odebrałby jej
+          // możliwość rozgałęzienia się na typie zdarzenia.
+          opis: OPIS_AKCJI[wpis.akcja],
           zasob: wpis.zasob,
           // Kto — jako identyfikator aktora, nie jako imię i nazwisko.
           // Do rozpoznania „to był mój lekarz" wystarczy, a nie buduje

@@ -186,7 +186,11 @@ try {
   const stan = await page.content();
   sprawdz(stan.includes('0.1.0-draft'), 'wersja zestawu reguł jest widoczna');
   sprawdz(stan.includes('zablokowana'), 'status roboczy jest nazwany blokadą, nie ostrzeżeniem');
-  sprawdz(stan.includes('Bluehost'), 'decyzja o hostingu jest wypisana jako warunek');
+  sprawdz(
+    stan.includes('CloudFerro') && stan.includes('umowy powierzenia'),
+    'rozstrzygnięcie hostingu nie kasuje warunku umowy powierzenia',
+  );
+  sprawdz(!stan.includes('Bluehost'), 'nieaktualny wariant hostingu zniknął ze stanu systemu');
   await zrzut(page, '06-stan');
 
   // --- prowizje marketplace -------------------------------------------------

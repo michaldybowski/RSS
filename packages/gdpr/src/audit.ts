@@ -20,7 +20,36 @@ export type AkcjaAudytu =
   | 'usuniecie_danych'
   | 'zmiana_zgody'
   | 'synchronizacja_tresci'
+  | 'rezerwacja_konsultacji'
+  | 'odwolanie_konsultacji'
+  | 'zamowienie_marketplace'
   | 'logowanie';
+
+/**
+ * Nazwy akcji dla człowieka.
+ *
+ * Rejestr dostępu istnieje po to, żeby uczestnik zrozumiał, co się działo
+ * z jego danymi. Wpis „udostepnienie_lekarzowi" tego nie robi — to identyfikator
+ * z bazy pokazany zamiast zdania. Słownik jest tutaj, a nie w kliencie,
+ * bo inaczej każdy klient wymyśliłby własny i po dodaniu akcji jeden z nich
+ * pokazywałby surowy kod.
+ */
+export const OPIS_AKCJI: Readonly<Record<AkcjaAudytu, string>> = {
+  odczyt_danych_zdrowotnych: 'Odczyt danych zdrowotnych',
+  zapis_danych_zdrowotnych: 'Zapis danych zdrowotnych',
+  wygenerowanie_planu: 'Wygenerowanie planu',
+  przekazanie_do_modelu: 'Przekazanie danych do modelu językowego',
+  udostepnienie_lekarzowi: 'Udostępnienie Karty Pacjenta lekarzowi',
+  odczyt_dashboardu: 'Odczyt zestawienia zbiorczego',
+  eksport_danych: 'Eksport danych',
+  usuniecie_danych: 'Usunięcie danych',
+  zmiana_zgody: 'Zmiana zgody',
+  synchronizacja_tresci: 'Synchronizacja treści z Notion',
+  rezerwacja_konsultacji: 'Rezerwacja konsultacji lekarskiej',
+  odwolanie_konsultacji: 'Odwołanie konsultacji lekarskiej',
+  zamowienie_marketplace: 'Zamówienie u partnera marketplace',
+  logowanie: 'Logowanie',
+};
 
 export interface WpisAudytu {
   readonly id: string;
@@ -113,6 +142,14 @@ export const OPERACJE_WYMAGAJACE_LOGU: readonly AkcjaAudytu[] = [
   // ZFŚS — czyli kwoty na notach. Bez wpisu nie da się odpowiedzieć na pytanie,
   // kto i kiedy wpuścił do systemu inną cenę.
   'synchronizacja_tresci',
+  // Konsultacja i zamówienie u partnera nie są odczytem danych zdrowotnych,
+  // ale są zdarzeniami, które uczestnik ma prawo zobaczyć u siebie: jedno mówi
+  // o wizycie u lekarza, drugie o tym, że jego pseudonim pojechał do firmy
+  // z zewnątrz. Odwołanie jest na liście razem z rezerwacją — rejestr, który
+  // pokazuje tylko zapisy, przedstawia odwołaną wizytę jako odbytą.
+  'rezerwacja_konsultacji',
+  'odwolanie_konsultacji',
+  'zamowienie_marketplace',
 ];
 
 export function wymagaLogu(akcja: AkcjaAudytu): boolean {
