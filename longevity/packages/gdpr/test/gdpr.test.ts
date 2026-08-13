@@ -276,6 +276,17 @@ describe('eksport (art. 15 i 20)', () => {
     assert.ok(pakiet.celePrzetwarzania.every((cel) => cel.podstawaPrawna.length > 10));
   });
 
+  test('opisuje wszystkie moduły, które dotykają danych osoby', () => {
+    // Eksport z art. 15 ma mówić, po co przetwarzamy dane — a nie tylko po co
+    // przetwarzaliśmy je w chwili pisania pierwszej wersji. Nowy moduł
+    // sięgający po dane uczestnika musi tu dopisać swój cel.
+    const cele = pakiet.celePrzetwarzania.map((cel) => cel.cel).join(' | ');
+
+    for (const modul of ['plan', 'AI', 'lekarz', 'konsultacji', 'partnera', 'pracodawcy']) {
+      assert.ok(cele.includes(modul), `brak celu obejmującego „${modul}": ${cele}`);
+    }
+  });
+
   test('wskazuje odbiorców, w tym transfer poza EOG', () => {
     const odbiorcy = pakiet.celePrzetwarzania.flatMap((cel) => cel.odbiorcy);
     assert.ok(odbiorcy.some((odbiorca) => /poza EOG/u.test(odbiorca)));

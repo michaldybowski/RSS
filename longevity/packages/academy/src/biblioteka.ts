@@ -10,20 +10,20 @@
  * Ostrzeżenie ma więc prowadzić do lekarza, nie zamykać strony.
  */
 
-import type { Assessment, ScoreComponent } from '@longevity/core';
+import {
+  FLAGI_PRZECIWWSKAZUJACE_WYSILEK,
+  type Assessment,
+  type ScoreComponent,
+} from '@longevity/core';
 
 import type { Material, TypMaterialu } from './types.ts';
 
 /**
  * Flagi, przy których materiał o wysokiej intensywności dostaje ostrzeżenie.
- * Ta sama lista co przy kwalifikacji do wyzwań — inny skutek, ta sama podstawa.
+ * Ta sama lista co przy kwalifikacji do wyzwań — inny skutek, ta sama podstawa,
+ * i jedno źródło w @longevity/core.
  */
-export const FLAGI_WYSILKOWE: readonly string[] = [
-  'FLAG_SYNCOPE',
-  'FLAG_CHEST_PAIN',
-  'FLAG_BMI_EXTREME',
-  'FLAG_EATING_DISORDER',
-];
+export const FLAGI_WYSILKOWE = FLAGI_PRZECIWWSKAZUJACE_WYSILEK;
 
 export interface Ostrzezenie {
   kod: string;

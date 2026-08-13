@@ -8,6 +8,8 @@
 
 import type { Oferta, Partner } from '@longevity/marketplace';
 
+import { NOW } from './config.ts';
+
 export const PARTNERZY: readonly Partner[] = [
   {
     id: 'p-lab',
@@ -95,4 +97,5 @@ export const OFERTY: readonly Oferta[] = [
   },
 ];
 
-export const TERAZ_MARKETPLACE = '2026-07-26T09:00:00.000Z';
+/** Wyprowadzone z NOW — inaczej zmiana daty prototypu rozjeżdża demo. */
+export const TERAZ_MARKETPLACE = NOW.toISOString();

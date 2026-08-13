@@ -31,6 +31,25 @@ interface FlagRule {
  * Kolejność ma znaczenie tylko dla prezentacji — flagi CZERWONE pierwsze,
  * żeby uczestnik zobaczył blokujące zanim dojdzie do informacyjnych.
  */
+/**
+ * Flagi, przy których wysiłek fizyczny jest przeciwwskazany do czasu oceny
+ * lekarskiej.
+ *
+ * Lista mieszka tutaj, przy regułach, a nie w pakietach, które z niej korzystają
+ * (@longevity/challenges — blokada wyzwań, @longevity/academy — ostrzeżenie przy
+ * treściach o wysokiej intensywności). Dwie kopie tej samej listy medycznej
+ * rozjeżdżają się przy pierwszej zmianie progów: lekarz dopisuje flagę w jednym
+ * miejscu, a drugie dalej przepuszcza wysiłek.
+ *
+ * Zmiana tej listy wymaga akceptacji medycznej tak samo jak zmiana progów.
+ */
+export const FLAGI_PRZECIWWSKAZUJACE_WYSILEK: readonly string[] = [
+  'FLAG_SYNCOPE',
+  'FLAG_CHEST_PAIN',
+  'FLAG_BMI_EXTREME',
+  'FLAG_EATING_DISORDER',
+];
+
 export const FLAG_RULES: readonly FlagRule[] = [
   {
     code: 'FLAG_GLUCOSE_HIGH',
