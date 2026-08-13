@@ -170,6 +170,18 @@ export default async function Wynik() {
         </a>
       </div>
 
+      <div className="karta">
+        <h2 style={{ marginTop: 0 }}>Biblioteka i Akademia</h2>
+        <p style={{ marginTop: 0 }}>
+          Materiały programu oraz ścieżki nauki. Propozycje dobierane są do obszarów,
+          w których Twój wynik wypadł najsłabiej — liczone przy otwarciu strony
+          i nigdzie niezapisywane.
+        </p>
+        <a className="przycisk" href="/biblioteka">
+          Otwórz bibliotekę
+        </a>
+      </div>
+
       <form action={startOver}>
         <div className="akcje">
           <button type="submit" className="wtorny">

@@ -159,3 +159,13 @@ ul.zwykla li { margin: 4px 0; }
 .wstrzymane p { margin: 0; font-size: 15px; }
 .mala { font-size: 13px; color: var(--tekst-slaby); }
 .poziom-znacznik { display: inline-block; padding: 4px 14px; border-radius: 999px; font-weight: 600; font-size: 14px; background: var(--akcent-slaby); color: var(--akcent); }
+
+/* Akademia */
+.moduly { list-style: none; padding: 0; margin: 12px 0; }
+.modul { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--linia); }
+.modul:last-child { border-bottom: none; }
+.modul-numer { width: 26px; height: 26px; border-radius: 50%; background: var(--tlo); border: 1px solid var(--linia); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex: none; }
+.modul.zaliczony .modul-numer { background: var(--akcent); color: #fff; border-color: var(--akcent); }
+.modul.zablokowany { opacity: 0.55; }
+.modul.niedostepny { opacity: 0.55; text-decoration-color: var(--tekst-slaby); }
+.modul-tresc { flex: 1; }

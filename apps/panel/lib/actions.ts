@@ -22,10 +22,18 @@ import {
 } from '@longevity/questionnaire';
 import { generatePlan } from '@longevity/plan';
 import { dolacz, zapiszPomiar } from '@longevity/challenges';
+import {
+  ocenQuiz,
+  postepSciezki,
+  wydajZaswiadczenie,
+  zaliczDeklaracja,
+  zaliczSprawdzianem,
+} from '@longevity/academy';
 
 import { PROTOTYPE_MODEL } from './prototypeModel.ts';
 import { ensureSessionCookie, getSession, resetSession, saveSession } from './session.ts';
 import { NOW, ONBOARDING_CONSENTS } from './config.ts';
+import { MATERIALY, materialPoIdentyfikatorze, QUIZY, sciezkaPoId } from './akademia.ts';
 import {
   DZISIAJ,
   PAKIET_UCZESTNIKA,
@@ -197,4 +205,72 @@ export async function zapiszWynikDnia(formData: FormData): Promise<void> {
 
   saveSession(session);
   revalidatePath(`/wyzwania/${wyzwanieId}`);
+}
+
+/**
+ * Zaliczenie materiału deklaracją.
+ *
+ * „Przerobiłem" jest deklaracją i tak jest zapisywane. Nie mierzymy uwagi
+ * i nie udajemy, że mierzymy — zaświadczenie ma mówić, co się faktycznie
+ * wydarzyło, a nie sugerować pomiar, którego nie było.
+ */
+export async function oznaczPrzerobiony(formData: FormData): Promise<void> {
+  const session = await getSession();
+  const material = materialPoIdentyfikatorze(String(formData.get('materialId') ?? ''));
+  if (material === undefined) redirect('/biblioteka');
+
+  session.zaliczenia = [...zaliczDeklaracja(session.zaliczenia, material, NOW.toISOString())];
+  saveSession(session);
+  revalidatePath(`/biblioteka/${material.id}`);
+  revalidatePath('/akademia');
+}
+
+/** Sprawdzian. Podejść jest dowolnie wiele — bramka po jednej pomyłce niczego nie uczy. */
+export async function wyslijSprawdzian(formData: FormData): Promise<void> {
+  const session = await getSession();
+  const material = materialPoIdentyfikatorze(String(formData.get('materialId') ?? ''));
+  const quiz = QUIZY.find((pozycja) => pozycja.id === material?.quizId);
+  if (material === undefined || quiz === undefined) redirect('/biblioteka');
+
+  const odpowiedzi: Record<string, number> = {};
+  for (const pytanie of quiz.pytania) {
+    const wybrana = formData.get(`pyt_${pytanie.id}`);
+    if (typeof wybrana === 'string' && wybrana !== '') odpowiedzi[pytanie.id] = Number(wybrana);
+  }
+
+  const wynik = ocenQuiz(quiz, odpowiedzi);
+  session.wynikQuizu = { materialId: material.id, wynik };
+
+  if (wynik.zaliczony) {
+    session.zaliczenia = [
+      ...zaliczSprawdzianem(session.zaliczenia, material, wynik, NOW.toISOString()),
+    ];
+  }
+
+  saveSession(session);
+  revalidatePath(`/biblioteka/${material.id}`);
+  revalidatePath('/akademia');
+}
+
+/** Zaświadczenie o ukończeniu ścieżki. Należy do uczestnika, nie do pracodawcy. */
+export async function odbierzZaswiadczenie(formData: FormData): Promise<void> {
+  const session = await getSession();
+  const sciezka = sciezkaPoId(String(formData.get('sciezkaId') ?? ''));
+  if (sciezka === undefined) redirect('/akademia');
+
+  const postep = postepSciezki(sciezka, MATERIALY, session.zaliczenia);
+
+  session.zaswiadczenia = [
+    ...session.zaswiadczenia,
+    wydajZaswiadczenie(
+      sciezka,
+      postep,
+      SUBJECT_REF,
+      session.zaswiadczenia.length + 1,
+      NOW.toISOString(),
+    ),
+  ];
+
+  saveSession(session);
+  revalidatePath('/akademia');
 }

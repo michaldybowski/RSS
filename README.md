@@ -11,8 +11,8 @@ i panel uczestnika.
 **Faza B — w toku.** Gotowe: autoryzacja w kontekście organizacji, agregacja
 dashboardu HR z progiem k-anonimowości, rozliczenia A/B/C/G/M, prawa osoby
 i retencja, panel HR, warsztaty i obecności, panel trenera, audyt Zdrowe Biuro
-z certyfikacją, panel audytora, panel administratora oraz wyzwania
-i gamifikacja. Zostaje: biblioteka i Akademia.
+z certyfikacją, panel audytora, panel administratora, wyzwania i gamifikacja
+oraz biblioteka i Akademia. **Faza B zamknięta.**
 
 Prototyp działa **wyłącznie na danych syntetycznych**. Tryb `real` jest
 zablokowany technicznie do czasu imiennej akceptacji reguł medycznych
@@ -81,6 +81,9 @@ apps/panel/                  panel uczestnika (Next.js, ADR-04/05)
   app/                       krok 0, kwestionariusz, podsumowanie, wynik
   app/wyzwania/              katalog z powodem wstrzymania, punkty, ranking
   app/wyzwania/[id]/         wpis dzienny, passa, historia pomiarów
+  app/biblioteka/            katalog treści z filtrami i propozycjami
+  app/biblioteka/[id]/       materiał, ostrzeżenia, sprawdzian z wyjaśnieniami
+  app/akademia/              ścieżki nauki, postęp modułów, zaświadczenie
   app/dokumenty/[format]/    pobieranie HTML, PDF, DOCX, iCal
   lib/session.ts             stan sesji — WYŁĄCZNIE prototyp, do wymiany
   middleware.ts              ustanowienie sesji przed renderowaniem
@@ -139,6 +142,12 @@ packages/workshops/          warsztaty on-site
   src/enrollment.ts          zapisy, lista rezerwowa, awans po zwolnieniu
   src/attendance.ts          obecności, lista dla trenera, frekwencja
   src/settlement.ts          rozliczenie trenera
+packages/academy/            biblioteka treści i Akademia (specyfikacja 9 i 14)
+  src/biblioteka.ts          katalog, filtry, ostrzeżenia zamiast blokad
+  src/quiz.ts                sprawdzian wiedzy, próg zaliczenia, wyjaśnienia
+  src/sciezki.ts             odblokowywanie modułów, materiał wycofany
+  src/zaswiadczenie.ts       dokument uczestnika, nie certyfikat pracodawcy
+  src/raport.ts              ESRS S1-13 z progiem k-anonimowości
 packages/challenges/         wyzwania i gamifikacja (specyfikacja 9)
   src/kwalifikacja.ts        kto może wziąć udział i dlaczego nie
   src/pomiary.ts             okno wsteczne, zakresy, jeden dzień = jedna wartość
@@ -223,6 +232,17 @@ Wymuszone technicznie, nie regulaminowo:
     zestawienia zespołowe obejmują tylko zespoły powyżej progu k-anonimowości
     i pokazują średnią, nie sumę. Zespół poniżej progu nie jest wymieniony
     nawet z nazwy.
+20. **Treści się nie blokuje, treści się oznacza.** Wyzwanie wysiłkowe przy
+    przeciwwskazaniu jest zamknięte, bo się je wykonuje; artykuł o tym samym
+    wysiłku dostaje ostrzeżenie, bo się go czyta. Odcinanie człowieka od wiedzy
+    o własnym stanie byłoby odwrotnością celu biblioteki.
+21. **Zaliczenie mówi, skąd się wzięło.** Materiał bez sprawdzianu zalicza
+    deklaracja i jest to zapisane wprost; materiału ze sprawdzianem deklaracja
+    nie zalicza. Nie mierzymy uwagi i nie udajemy, że mierzymy. Wynik
+    sprawdzianu nie wpływa na ocenę zdrowia ani na dobór wyzwań.
+22. **Wycofanie treści nie unieważnia czyjejś nauki.** Moduł, którego materiał
+    zniknął z biblioteki, wypada z wymagań ścieżki i przestaje zamykać kolejne —
+    razem z tytułem, żeby było wiadomo, czego dotyczył.
 
 ## Dokumenty
 

@@ -1,0 +1,15 @@
+{
+  "name": "@longevity/academy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Biblioteka treści i Akademia — ścieżki, sprawdziany, zaświadczenia (specyfikacja 9 i 14)",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@longevity/analytics": "*",
+    "@longevity/core": "*"
+  }
+}
