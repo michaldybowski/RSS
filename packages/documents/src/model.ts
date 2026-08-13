@@ -135,8 +135,12 @@ function kartaPacjenta({ intake, assessment, disclaimer }: PackInput): DocumentM
 function zlecenieBadan({ referrals, disclaimer }: PackInput): DocumentModel {
   return {
     kod: 'DOK-2',
-    tytul: 'Zlecenie badań diagnostycznych',
-    podtytul: 'Panel bazowy oraz panele warunkowe wynikające z profilu',
+    // NIE „zlecenie". Dokument wychodzi z reguł platformy, bez udziału lekarza,
+    // a zlecenie badań jest dokumentem lekarskim (patrz @longevity/clinical:
+    // `dokumentZlecenia` rzuca, dopóki nie ma podpisu). Tytuł sugerujący
+    // zlecenie kończyłby się okazywaniem tego wydruku w punkcie pobrań.
+    tytul: 'Propozycja zakresu badań',
+    podtytul: 'Do omówienia z lekarzem — panel bazowy i panele warunkowe',
     sekcje: [
       { naglowek: 'Panel Bazowy Longevity', punkty: referrals.panelBazowy },
       ...referrals.paneleWarunkowe.map((panel) => ({
@@ -144,7 +148,9 @@ function zlecenieBadan({ referrals, disclaimer }: PackInput): DocumentModel {
         punkty: panel.badania,
       })),
     ],
-    zastrzezenie: disclaimer,
+    zastrzezenie:
+      'To nie jest zlecenie badań. Zlecenie wystawia lekarz — zabierz tę listę ' +
+      `na konsultację i ustal z nim ostateczny zakres. ${disclaimer}`,
   };
 }
 

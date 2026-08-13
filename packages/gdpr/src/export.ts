@@ -47,6 +47,21 @@ export const CELE_PRZETWARZANIA: readonly OpisCelu[] = [
     odbiorcy: ['lekarz prowadzący konsultację'],
   },
   {
+    cel: 'Umówienie i przebieg konsultacji lekarskiej',
+    podstawaPrawna: 'Art. 9 ust. 2 lit. h RODO — profilaktyka zdrowotna',
+    kategorieDanych: ['termin i status wizyty', 'notatka lekarza', 'zlecenie badań'],
+    odbiorcy: ['lekarz prowadzący konsultację', 'dostawca hostingu'],
+  },
+  {
+    // Partner realizuje zamówienie i dostaje wyłącznie kod odbioru oraz
+    // pozycję. Bez tego wpisu eksport z art. 15 nie opisywałby wszystkiego,
+    // co platforma robi z danymi.
+    cel: 'Realizacja zamówienia u partnera marketplace',
+    podstawaPrawna: 'Art. 6 ust. 1 lit. b RODO — wykonanie umowy',
+    kategorieDanych: ['pseudonim jako kod odbioru', 'przedmiot i kwota zamówienia'],
+    odbiorcy: ['partner realizujący zamówienie'],
+  },
+  {
     cel: 'Statystyka zbiorcza dla pracodawcy',
     podstawaPrawna: 'Dane zanonimizowane — poza zakresem RODO',
     kategorieDanych: ['agregaty grup nie mniejszych niż 10 osób'],

@@ -14,7 +14,7 @@
  * wymagają wysiłku, a są dokładnie tym, co takiej osobie pomaga.
  */
 
-import type { Assessment, RiskCategory } from '@longevity/core';
+import { FLAGI_PRZECIWWSKAZUJACE_WYSILEK, type Assessment, type RiskCategory } from '@longevity/core';
 
 import type { Metryka, Wyzwanie } from './types.ts';
 
@@ -22,18 +22,18 @@ import type { Metryka, Wyzwanie } from './types.ts';
 export const METRYKI_WYSILKOWE: readonly Metryka[] = ['kroki', 'trening'];
 
 /**
- * Flagi blokujące metrykę. Nie jest to lista wszystkich flag — tylko tych,
- * przy których liczenie kroków albo minut treningu jest przeciwwskazaniem.
+ * Flagi blokujące metrykę.
+ *
+ * Sama lista flag pochodzi z @longevity/core — jest medyczna i wymaga
+ * akceptacji lekarza. Tutaj zapada wyłącznie decyzja produktowa: które metryki
+ * są wysiłkiem. Wyzwanie krokowe u osoby z zaburzeniami odżywiania bywa
+ * napędem do kompulsywnego ruchu; punkty za każdy kolejny krok są tu ryzykiem,
+ * nie motywacją — dlatego kroki są na tej samej liście co trening.
  */
-export const PRZECIWWSKAZANIA: Readonly<Record<string, readonly Metryka[]>> = {
-  FLAG_SYNCOPE: ['kroki', 'trening'],
-  FLAG_CHEST_PAIN: ['kroki', 'trening'],
-  FLAG_BMI_EXTREME: ['kroki', 'trening'],
-  // Wyzwanie krokowe u osoby z zaburzeniami odżywiania bywa napędem
-  // do kompulsywnego ruchu. Punkty za każdy kolejny krok są tu ryzykiem,
-  // nie motywacją.
-  FLAG_EATING_DISORDER: ['kroki', 'trening'],
-};
+export const PRZECIWWSKAZANIA: Readonly<Record<string, readonly Metryka[]>> =
+  Object.fromEntries(
+    FLAGI_PRZECIWWSKAZUJACE_WYSILEK.map((kod) => [kod, METRYKI_WYSILKOWE]),
+  );
 
 export type Kwalifikacja =
   | { dozwolone: true }
