@@ -346,6 +346,110 @@ try {
   await page.waitForSelector('td:has-text("wpis ręczny")', { timeout: 30_000 });
   sprawdz(true, 'wpis dzienny zapisany');
   await zrzut(page, '07-wyzwanie');
+
+  // --- biblioteka ----------------------------------------------------------
+  await page.goto(`${baseUrl}/wynik`);
+  await page.click('a:has-text("Otwórz bibliotekę")');
+  await page.waitForSelector('h1:has-text("Biblioteka")', { timeout: 30_000 });
+
+  const biblioteka = await page.content();
+  sprawdz(biblioteka.includes('Higiena snu'), 'katalog biblioteki otwarty');
+  sprawdz(biblioteka.includes('Dla Ciebie'), 'propozycje dobrane do słabych obszarów');
+  sprawdz(!biblioteka.includes('Protokół regeneracji PRIME'), 'treść spoza pakietu niewidoczna');
+  sprawdz(
+    !biblioteka.includes('Suplementacja — wersja z 2025'),
+    'materiał wycofany zniknął z katalogu',
+  );
+  await zrzut(page, '08-biblioteka');
+
+  // Filtr po filarze zawęża listę.
+  await page.goto(`${baseUrl}/biblioteka?filar=Sen`);
+  await page.waitForSelector('h1:has-text("Biblioteka")', { timeout: 30_000 });
+  sprawdz(
+    !(await page.content()).includes('Rozgrzewka przy biurku'),
+    'filtr po filarze zawęża katalog',
+  );
+
+  // Materiał spoza pakietu nie otwiera się także z adresu.
+  await page.goto(`${baseUrl}/biblioteka/m-prime-01`);
+  await page.waitForSelector('h1:has-text("Biblioteka")', { timeout: 30_000 });
+  sprawdz(
+    (await page.locator('h1').innerText()).trim() === 'Biblioteka',
+    'materiał spoza pakietu nie otwiera się z adresu',
+  );
+
+  // Materiał o wysokiej intensywności ostrzega, ale się otwiera.
+  await page.goto(`${baseUrl}/biblioteka/m-ruch-02`);
+  await page.waitForSelector('h1:has-text("Trening interwałowy")', { timeout: 30_000 });
+  sprawdz(true, 'materiał o wysokiej intensywności jest dostępny do czytania');
+
+  // --- sprawdzian -----------------------------------------------------------
+  await page.goto(`${baseUrl}/biblioteka/m-sen-01`);
+  await page.waitForSelector('h2:has-text("Sprawdzian")', { timeout: 30_000 });
+
+  // Dwie błędne odpowiedzi na trzy pytania — poniżej progu.
+  await page.check('input[name="pyt_p1"][value="1"]');
+  await page.check('input[name="pyt_p2"][value="2"]');
+  await page.check('input[name="pyt_p3"][value="1"]');
+  await page.click('button:has-text("Sprawdź")');
+  await page.waitForSelector('.blad', { timeout: 30_000 });
+  const nieudany = await page.content();
+  sprawdz(nieudany.includes('spróbuj ponownie'), 'sprawdzian poniżej progu nie zalicza');
+  sprawdz(
+    nieudany.includes('Światło jest głównym sygnałem'),
+    'wynik niesie wyjaśnienia, a nie samą ocenę',
+  );
+
+  // Poprawne odpowiedzi zaliczają.
+  await page.check('input[name="pyt_p1"][value="0"]');
+  await page.check('input[name="pyt_p2"][value="1"]');
+  await page.check('input[name="pyt_p3"][value="1"]');
+  await page.click('button:has-text("Spróbuj ponownie")');
+  await page.waitForSelector('.notka:has-text("sprawdzian zaliczony")', { timeout: 30_000 });
+  sprawdz(true, 'powtórne podejście zalicza sprawdzian');
+  await zrzut(page, '09-sprawdzian');
+
+  // --- akademia -------------------------------------------------------------
+  await page.goto(`${baseUrl}/akademia`);
+  await page.waitForSelector('h1:has-text("Akademia")', { timeout: 30_000 });
+  const akademia = await page.content();
+  sprawdz(akademia.includes('Podstawy długowieczności'), 'ścieżki Akademii widoczne');
+  sprawdz(akademia.includes('sprawdzian 100%'), 'zaliczenie sprawdzianem opisane w module');
+  sprawdz(
+    akademia.includes('materiał wycofany — moduł pominięty'),
+    'wycofany materiał jest pominięty, a nie ukryty',
+  );
+
+  // Domykamy ścieżkę: pozostałe moduły obowiązkowe.
+  for (const materialId of ['m-ruch-01', 'm-zyw-01']) {
+    await page.goto(`${baseUrl}/biblioteka/${materialId}`);
+    await page.waitForSelector('h1', { timeout: 30_000 });
+
+    if ((await page.locator('button:has-text("Oznacz jako przerobione")').count()) > 0) {
+      await page.click('button:has-text("Oznacz jako przerobione")');
+      await page.waitForSelector('.notka', { timeout: 30_000 });
+    } else {
+      await page.check('input[name="pyt_p1"][value="1"]');
+      await page.check('input[name="pyt_p2"][value="0"]');
+      await page.check('input[name="pyt_p3"][value="1"]');
+      await page.click('button:has-text("Sprawdź")');
+      await page.waitForSelector('.notka:has-text("sprawdzian zaliczony")', { timeout: 30_000 });
+    }
+  }
+
+  await page.goto(`${baseUrl}/akademia`);
+  await page.waitForSelector('button:has-text("Odbierz zaświadczenie")', { timeout: 30_000 });
+  sprawdz(true, 'ścieżka domyka się mimo wycofanego modułu');
+
+  await page.click('button:has-text("Odbierz zaświadczenie")');
+  await page.waitForSelector('.notka:has-text("AK/2026/0001")', { timeout: 30_000 });
+  const zZaswiadczeniem = await page.content();
+  sprawdz(zZaswiadczeniem.includes('AK/2026/0001'), 'zaświadczenie wydane z numerem');
+  sprawdz(
+    zZaswiadczeniem.includes('pracodawca widzi wyłącznie zestawienia zbiorcze'),
+    'zaświadczenie należy do uczestnika',
+  );
+  await zrzut(page, '10-akademia');
 } finally {
   await browser.close();
 }

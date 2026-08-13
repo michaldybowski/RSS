@@ -17,6 +17,7 @@ import { historiaDemo } from './wyzwania.ts';
 
 import type { Assessment, ParticipantIntake, PlanPreferences } from '@longevity/core';
 import type { ConsentLedger } from '@longevity/consent';
+import type { WynikQuizu, Zaliczenie, Zaswiadczenie } from '@longevity/academy';
 import type { Pomiar, Zapis } from '@longevity/challenges';
 import type { AnswerValue, ValidationIssue } from '@longevity/questionnaire';
 import type { PipelineResult } from '@longevity/plan';
@@ -46,6 +47,11 @@ export interface PanelSession {
   pomiary: Pomiar[];
   /** Powód odrzucenia ostatniego wpisu — pokazywany przy formularzu. */
   bladPomiaru?: string | undefined;
+  /** Historia nauki. Nigdy nie wraca do Notion i nie trafia do pracodawcy. */
+  zaliczenia: Zaliczenie[];
+  zaswiadczenia: Zaswiadczenie[];
+  /** Wynik ostatniego sprawdzianu — do pokazania po wysłaniu formularza. */
+  wynikQuizu?: { materialId: string; wynik: WynikQuizu } | undefined;
 }
 
 const sessions = new Map<string, PanelSession>();
@@ -55,7 +61,17 @@ function create(id: string): PanelSession {
   // z samymi zerami nie pokazuje ani passy, ani limitu, ani progu ukończenia.
   const { zapisy, pomiary } = historiaDemo();
 
-  return { id, ledger: [], answers: {}, stepIssues: {}, consentAttempted: false, zapisy, pomiary };
+  return {
+    id,
+    ledger: [],
+    answers: {},
+    stepIssues: {},
+    consentAttempted: false,
+    zapisy,
+    pomiary,
+    zaliczenia: [],
+    zaswiadczenia: [],
+  };
 }
 
 /** Zwraca sesję dla bieżącego ciasteczka; tworzy nową, jeśli nie ma. */
