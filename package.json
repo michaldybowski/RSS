@@ -25,7 +25,9 @@
     "admin:build": "npm run build --workspace @longevity/admin",
     "admin:e2e": "node --import tsx apps/admin/e2e/przejscie.mts",
     "api:build": "npm run build --workspace @longevity/api",
-    "api:kontrakt": "node --import tsx apps/api/e2e/kontrakt.mts"
+    "api:kontrakt": "node --import tsx apps/api/e2e/kontrakt.mts",
+    "lekarz:build": "npm run build --workspace @longevity/lekarz",
+    "lekarz:e2e": "node --import tsx apps/lekarz/e2e/przejscie.mts"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

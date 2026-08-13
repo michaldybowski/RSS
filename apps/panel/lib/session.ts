@@ -19,6 +19,7 @@ import type { Assessment, ParticipantIntake, PlanPreferences } from '@longevity/
 import type { ConsentLedger } from '@longevity/consent';
 import type { WynikQuizu, Zaliczenie, Zaswiadczenie } from '@longevity/academy';
 import type { Pomiar, Zapis } from '@longevity/challenges';
+import type { Konsultacja } from '@longevity/clinical';
 import type { AnswerValue, ValidationIssue } from '@longevity/questionnaire';
 import type { PipelineResult } from '@longevity/plan';
 
@@ -50,6 +51,9 @@ export interface PanelSession {
   /** Historia nauki. Nigdy nie wraca do Notion i nie trafia do pracodawcy. */
   zaliczenia: Zaliczenie[];
   zaswiadczenia: Zaswiadczenie[];
+  konsultacje: Konsultacja[];
+  /** Powód odrzucenia ostatniej rezerwacji — pokazywany przy terminarzu. */
+  bladRezerwacji?: string | undefined;
   /** Wynik ostatniego sprawdzianu — do pokazania po wysłaniu formularza. */
   wynikQuizu?: { materialId: string; wynik: WynikQuizu } | undefined;
 }
@@ -71,6 +75,7 @@ function create(id: string): PanelSession {
     pomiary,
     zaliczenia: [],
     zaswiadczenia: [],
+    konsultacje: [],
   };
 }
 

@@ -17,6 +17,9 @@ export type Action =
   | 'zapis_obecnosci'
   | 'zapis_audytu'
   | 'odczyt_rozliczen'
+  | 'rezerwacja_konsultacji'
+  | 'prowadzenie_konsultacji'
+  | 'zatwierdzenie_zlecenia_badan'
   | 'zarzadzanie_synchronizacja'
   | 'odczyt_logu_synchronizacji'
   | 'obsluga_wnioskow_rodo'
@@ -39,6 +42,13 @@ export type Resource =
   | { kind: 'organizacja'; organizationId: string }
   | { kind: 'warsztat'; organizationId: string; trainerId: string }
   | { kind: 'audyt'; organizationId: string; auditorId: string }
+  | {
+      kind: 'konsultacja';
+      organizationId: string;
+      /** Lekarz prowadzący. Konsultacja należy do jednego, nie do „lekarzy". */
+      clinicianId: string;
+      participantId: string;
+    }
   | { kind: 'system' };
 
 export type Decision =

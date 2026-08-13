@@ -1,22 +1,19 @@
 {
-  "name": "@longevity/panel",
+  "name": "@longevity/lekarz",
   "version": "0.1.0",
   "private": true,
-  "description": "Panel uczestnika — prototyp Fazy A na danych syntetycznych",
+  "description": "Panel lekarza — grafik konsultacji, Karta Pacjenta za zgodą, zlecenia badań",
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 3006",
     "build": "next build",
-    "start": "next start -p 3000"
+    "start": "next start -p 3006"
   },
   "dependencies": {
-    "@longevity/academy": "*",
-    "@longevity/challenges": "*",
+    "@longevity/access": "*",
     "@longevity/clinical": "*",
     "@longevity/consent": "*",
     "@longevity/core": "*",
-    "@longevity/documents": "*",
-    "@longevity/plan": "*",
-    "@longevity/questionnaire": "*",
+    "@longevity/gdpr": "*",
     "next": "^15.5.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
